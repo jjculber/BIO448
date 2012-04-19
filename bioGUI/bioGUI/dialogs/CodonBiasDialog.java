@@ -1,7 +1,5 @@
 package bioGUI.dialogs;
 
-import bioGUI.model.CGContent;
-
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
@@ -25,6 +23,7 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.BoxLayout;
 
+
 import java.io.File;
 
 public class CodonBiasDialog extends JDialog {
@@ -39,7 +38,7 @@ public class CodonBiasDialog extends JDialog {
     */
    private Container mPane = null, mOwner = null;
    private JDialog mDialog = null;
-   private JTextField mFasta, mRangeBegin, mRangeEnd;
+   private JTextField mGFF, mRangeBegin, mRangeEnd;
    private JComboBox mStrand;
 
    public CodonBiasDialog() {
@@ -57,7 +56,7 @@ public class CodonBiasDialog extends JDialog {
 
       setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-      mFasta = new JTextField(20);
+      mGFF = new JTextField(20);
       mRangeBegin = new JTextField(20);
       mRangeEnd = new JTextField(20);
 
@@ -80,7 +79,7 @@ public class CodonBiasDialog extends JDialog {
 
       setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-      mFasta = new JTextField(20);
+      mGFF = new JTextField(20);
       mRangeBegin = new JTextField(20);
       mRangeEnd = new JTextField(20);
 
@@ -99,8 +98,8 @@ public class CodonBiasDialog extends JDialog {
     * input
     */
    public void init() {
-      JLabel fastaFileLabel = new JLabel("Select FASTA File:");
-      JPanel fastaFileField = prepareFastaField(mFasta);
+      JLabel fastaFileLabel = new JLabel("Select GFF File:");
+      JPanel fastaFileField = prepareFastaField(mGFF);
 
       JPanel beginField = prepareRangeField("Start", mRangeBegin);
       JPanel endField = prepareRangeField("End", mRangeEnd);
@@ -220,7 +219,7 @@ public class CodonBiasDialog extends JDialog {
 
       okayButton.addActionListener(new ActionListener(){
          public void actionPerformed(ActionEvent e) {
-            if (mFasta.getText().equals("")) {
+            if (mGFF.getText().equals("")) {
                JOptionPane.showMessageDialog(mOwner,
                 "No FASTA file was selected",
                 "Invalid File", JOptionPane.ERROR_MESSAGE);
@@ -228,11 +227,7 @@ public class CodonBiasDialog extends JDialog {
             }
             else
             {
-              JOptionPane.showMessageDialog(mOwner,
-                CGContent.gcSubCount(mFasta.getText(), 
-                      Integer.valueOf(mRangeBegin.getText()), 
-                      Integer.valueOf(mRangeEnd.getText())),
-                "GC Content", JOptionPane.INFORMATION_MESSAGE);
+              // TODO codon bias work
             }
             dispose();
          }

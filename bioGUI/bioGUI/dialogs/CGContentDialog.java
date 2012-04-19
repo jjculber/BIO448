@@ -1,31 +1,23 @@
 package bioGUI.dialogs;
 
-import bioGUI.model.CGContent;
-
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
+import java.awt.FlowLayout;
 import java.awt.Frame;
-import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.FlowLayout;
+import java.io.File;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JOptionPane;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.JButton;
-import javax.swing.BoxLayout;
-
-import java.io.File;
 
 public class CGContentDialog extends JDialog {
    /*
@@ -228,11 +220,7 @@ public class CGContentDialog extends JDialog {
             }
             else
             {
-              JOptionPane.showMessageDialog(mOwner,
-                CGContent.gcSubCount(mFasta.getText(), 
-                      Integer.valueOf(mRangeBegin.getText()), 
-                      Integer.valueOf(mRangeEnd.getText())),
-                "GC Content", JOptionPane.INFORMATION_MESSAGE);
+              //TODO GC Content work
             }
             dispose();
          }
