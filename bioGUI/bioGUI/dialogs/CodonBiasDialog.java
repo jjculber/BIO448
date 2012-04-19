@@ -227,7 +227,7 @@ public class CodonBiasDialog extends JDialog {
             }
             else
             {
-              // TODO codon bias work
+              // TODO Codon bias work
             }
             dispose();
          }
