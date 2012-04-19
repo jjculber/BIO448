@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 
-public class DNALibrary {
+public static class DNALibrary {
    public static File inputFile;
 	public static Map<String, String[]> aa2codon = new HashMap<String, String[]>();
 	public static int[][][] freq = new int[4][4][4];
