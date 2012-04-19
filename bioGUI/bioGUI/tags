@@ -1,0 +1,44 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+BioGUI	BioGUI.java	/^public class BioGUI {$/;"	c
+DIALOG_HEIGHT	dialogs/InputDialog.java	/^   private final int DIALOG_HEIGHT = 400, DIALOG_WIDTH = 500;$/;"	f	class:InputDialog	file:
+DIALOG_WIDTH	dialogs/InputDialog.java	/^   private final int DIALOG_HEIGHT = 400, DIALOG_WIDTH = 500;$/;"	f	class:InputDialog	file:
+FRAME_HEIGHT	MainWindow.java	/^                            FRAME_HEIGHT = 600;$/;"	f	class:MainWindow	file:
+FRAME_WIDTH	MainWindow.java	/^   private static final int FRAME_WIDTH = 500,$/;"	f	class:MainWindow	file:
+InputDialog	dialogs/InputDialog.java	/^   public InputDialog() {$/;"	m	class:InputDialog
+InputDialog	dialogs/InputDialog.java	/^   public InputDialog(Frame owner, String title) {$/;"	m	class:InputDialog
+InputDialog	dialogs/InputDialog.java	/^public class InputDialog extends JDialog {$/;"	c
+MainWindow	MainWindow.java	/^   private MainWindow() {$/;"	m	class:MainWindow	file:
+MainWindow	MainWindow.java	/^public class MainWindow extends JFrame {$/;"	c
+STRAND_OPTIONS	dialogs/InputDialog.java	/^   private final String[] STRAND_OPTIONS = new String[] {"Positive", "Minus"};$/;"	f	class:InputDialog	file:
+WINDOW_TITLE	MainWindow.java	/^   private static final String WINDOW_TITLE = "CSC 448 - Bioinformatics";$/;"	f	class:MainWindow	file:
+bioGUI	BioGUI.java	/^package bioGUI;$/;"	p
+bioGUI	MainWindow.java	/^package bioGUI;$/;"	p
+bioGUI.dialogs	dialogs/InputDialog.java	/^package bioGUI.dialogs;$/;"	p
+createCancelButton	dialogs/InputDialog.java	/^   private JButton createCancelButton() {$/;"	m	class:InputDialog	file:
+createOkayButton	dialogs/InputDialog.java	/^   private JButton createOkayButton() {$/;"	m	class:InputDialog	file:
+getMainFrame	MainWindow.java	/^   public static MainWindow getMainFrame() {$/;"	m	class:MainWindow
+init	MainWindow.java	/^   public void init() {$/;"	m	class:MainWindow
+init	dialogs/InputDialog.java	/^   public void init() {$/;"	m	class:InputDialog
+initAnalysisMenu	MainWindow.java	/^   private JMenu initAnalysisMenu() {$/;"	m	class:MainWindow	file:
+initControls	dialogs/InputDialog.java	/^   public JPanel initControls() {$/;"	m	class:InputDialog
+initFileMenu	MainWindow.java	/^   private JMenu initFileMenu() {$/;"	m	class:MainWindow	file:
+mDialog	dialogs/InputDialog.java	/^   private JDialog mDialog = null;$/;"	f	class:InputDialog	file:
+mFasta	dialogs/InputDialog.java	/^   private JTextField mFasta, mRangeBegin, mRangeEnd;$/;"	f	class:InputDialog	file:
+mMainFrame	MainWindow.java	/^   private static MainWindow mMainFrame = null;$/;"	f	class:MainWindow	file:
+mMenuBar	MainWindow.java	/^   private JMenuBar mMenuBar;$/;"	f	class:MainWindow	file:
+mOwner	dialogs/InputDialog.java	/^   private Container mPane = null, mOwner = null;$/;"	f	class:InputDialog	file:
+mPane	dialogs/InputDialog.java	/^   private Container mPane = null, mOwner = null;$/;"	f	class:InputDialog	file:
+mRangeBegin	dialogs/InputDialog.java	/^   private JTextField mFasta, mRangeBegin, mRangeEnd;$/;"	f	class:InputDialog	file:
+mRangeEnd	dialogs/InputDialog.java	/^   private JTextField mFasta, mRangeBegin, mRangeEnd;$/;"	f	class:InputDialog	file:
+mStrand	dialogs/InputDialog.java	/^   private JComboBox mStrand;$/;"	f	class:InputDialog	file:
+main	BioGUI.java	/^   public static void main(String[] args) {$/;"	m	class:BioGUI
+main	dialogs/InputDialog.java	/^   public static void main(String[] args) {$/;"	m	class:InputDialog
+prepareBrowseButton	dialogs/InputDialog.java	/^   private JButton prepareBrowseButton(final JTextField fastaField) {$/;"	m	class:InputDialog	file:
+prepareFastaField	dialogs/InputDialog.java	/^   private JPanel prepareFastaField(JTextField fastaField) {$/;"	m	class:InputDialog	file:
+prepareRangeField	dialogs/InputDialog.java	/^   private JPanel prepareRangeField(String labelPrefix, JTextField rangeInput) {$/;"	m	class:InputDialog	file:
+showWindow	MainWindow.java	/^   public void showWindow() {$/;"	m	class:MainWindow
