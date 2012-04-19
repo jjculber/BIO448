@@ -7,20 +7,23 @@ import java.lang.StringBuilder;
 
 import java.lang.Math; 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 
-public class DNALibrary {
+public static class DNALibrary {
    public static File inputFile;
-
+	public static Map<String, String[]> aa2codon = new HashMap<String, String[]>();
+	public static int[][][] freq = new int[4][4][4];
+	
 	public static void main(String[] args) throws NumberFormatException, IOException {
 			int i = 0, frame = 0, shift = 0; 
 			boolean valid = false; 
-			char isStrand = '\0'; 
 			Scanner sc = new Scanner(System.in); 
 			String filename = null;
 			
-			System.out.println("GC Content Analyzer, now GFF only!");
+			System.out.println("GC Content Analyzer, now FASTA only!");
 			
 			valid = false; 
 			
@@ -57,7 +60,7 @@ public class DNALibrary {
 				i++;
 				System.out.println(gene.name + " " + gene.start + " " + gene.end);
 				
-				String input = readGene(gene.name + ".txt", gene.start, gene.end);
+				String input = readContig(gene.name + ".txt", gene.start, gene.end);
 				gene.bases = input;
 				frames = gcPercentage(gene, frame, shift);
 				
@@ -79,18 +82,13 @@ public class DNALibrary {
 	 */
 	public static String reverseComplement(String gene)
 	{
-				
-		int length = gene.length();
-		
 		StringBuilder reverse = new StringBuilder();
 		
 		for(int i = gene.length(); i > 0; --i)
 		{
 			char result = gene.charAt(i-1);
-			
 			reverse.append(complement(result));
 		}
-
 		return reverse.toString(); 
 	}
 	
@@ -124,7 +122,7 @@ public class DNALibrary {
 	 * @param end
 	 * @return
 	 */
-	public static String readGene(String filename, int start, int end)
+	public static String readContig(String filename, int start, int end)
 	{
 		int i; 
 		StringBuilder fileContents = new StringBuilder();
@@ -379,6 +377,68 @@ public class DNALibrary {
 		}
 		return total;
 	}
+	
+	public static double chiSq(String aminoAcid) {
+		String[] codons = aa2codon.get(aminoAcid);
+		int degenerate = codons.length;
+		int[] freqs = new int[degenerate];
+		int total = 0;
+		double e;
+		double sum = 0.0;
+
+		for (int i = 0; i < degenerate; i++) {
+			freqs[i] = getFreq(codons[i]);
+			total += freqs[i];
+		}
+		e = (double) total / degenerate;
+		//System.out.print("Expecting " + e + " for " + aminoAcid);
+
+		// Summation of ((# of occurences - E)^2)/E
+		for (int i = 0; i < degenerate; i++) {
+			sum += Math.pow(freqs[i]-e, 2.0) / e;
+		}
+
+		return sum;
+	}
+
+	public static int getFreq(String codon) {
+		return freq[ntoi(codon.charAt(0))][ntoi(codon.charAt(2))][ntoi(codon.charAt(1))];
+	}
+	
+	public static int ntoi(char neucleotide) {
+		if (neucleotide == 'A')
+			return 0;
+		else if (neucleotide == 'C')
+			return 1;
+		else if (neucleotide == 'G')
+			return 2;
+		return 3;
+	}
+	
+	public static void initAA() {
+		aa2codon.put("I", new String[]{"ATT", "ATC", "ATA"});
+		aa2codon.put("L", new String[]{"CTT", "CTC", "CTA", "CTG", "TTA", "TTG"});
+		aa2codon.put("V", new String[]{"GTT", "GTC", "GTA", "GTG"});
+		aa2codon.put("F", new String[]{"TTT", "TTC"});
+		aa2codon.put("M", new String[]{"ATG"});
+		aa2codon.put("C", new String[]{"TGT", "TGC"});
+		aa2codon.put("A", new String[]{"GCT", "GCC", "GCA", "GCG"});
+		aa2codon.put("G", new String[]{"GGT", "GGC", "GGA", "GGG"});
+		aa2codon.put("P", new String[]{"CCT", "CCC", "CCA", "CCG"});
+		aa2codon.put("T", new String[]{"ACT", "ACC", "ACA", "ACG"});
+		aa2codon.put("S", new String[]{"TCT", "TCC", "TCA", "TCG", "AGT", "AGC"});
+		aa2codon.put("Y", new String[]{"TAT", "TAC"});
+		aa2codon.put("W", new String[]{"TGG"});
+		aa2codon.put("Q", new String[]{"CAA", "CAG"});
+		aa2codon.put("N", new String[]{"AAT", "AAC"});
+		aa2codon.put("H", new String[]{"CAT", "CAC"});
+		aa2codon.put("E", new String[]{"GAA", "GAG"});
+		aa2codon.put("D", new String[]{"GAT", "GAC"});
+		aa2codon.put("K", new String[]{"AAA", "AAG"});
+		aa2codon.put("R", new String[]{"CGT", "CGC", "CGA", "CGG", "AGA", "AGG"});
+		aa2codon.put("STOP", new String[]{"TAA", "TAG", "TGA"});
+	}
+
 	
 	public static class Strand
 	{
