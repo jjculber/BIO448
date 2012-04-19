@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.lang.Math;
 
+import bioGUI.model.DNALibrary.Strand;
+
 public class CodonBias {
 	public static Map<String, String[]> aa2codon = new HashMap<String, String[]>();
 	public static int[][][] freq = new int[4][4][4];
@@ -30,14 +32,14 @@ public class CodonBias {
 		System.out.println("Please enter the GFF file name:");
 		gffFile = new File(sc.nextLine());
 
-		GFF[] exons = CGContent.readGFF(gffFile.getAbsolutePath());
+		Strand[] exons = DNALibrary.readStrandsFromGFF(gffFile.getAbsolutePath());
 
 		String path = gffFile.getAbsolutePath();
 		String fileSuffix = "_"+path.substring(path.lastIndexOf("\\")+1, path.length()-4) + ".csv";
 		path = path.substring(0, path.lastIndexOf("\\")+1);
 		
-		System.out.println(exons[0].filename);
-		String fastaFileName = path + exons[0].filename + ".txt";
+		System.out.println(exons[0].name);
+		String fastaFileName = path + exons[0].name + ".txt";
 		System.out.println("Looking for FASTA file at " + fastaFileName);
 		File fastaFile = new File(fastaFileName);
 
@@ -65,21 +67,21 @@ public class CodonBias {
 		if(stopPos == -1)
 			stopPos = dna.length();
 
-		//TODO loop through GFFs
-		
 		// FIND GENES AND COUNT NEUCLEOTIDES
 		dna = dna.substring(startPos, stopPos);
 		StringBuffer concat = new StringBuffer();
-		for (GFF gff : exons) {
+		for (Strand gff : exons) {
 			System.out.println(gff.start + " " + gff.end + " " + gff.direction);
-			if (gff.start < dna.length() && gff.end < dna.length() && gff.start < gff.end) {
-				concat.append(dna.substring(gff.start, gff.end));
+			if (gff.start < dna.length() && gff.end < dna.length()) {
+				if (gff.start < gff.end) {
+					concat.append(dna.substring(gff.start, gff.end));
+				} else {
+					concat.append(DNALibrary.reverseComplement(dna.substring(gff.end, gff.start)));
+				}
 			}
 		}
 
 		String all = concat.toString();
-		//System.out.println(exons.length);
-		//System.out.println(all.length());
 
 		int i = 0;
 		while (i < all.length()-2) {
@@ -148,7 +150,6 @@ public class CodonBias {
 			total += freqs[i];
 		}
 		e = (double) total / degenerate;
-		//System.out.print("Expecting " + e + " for " + aminoAcid);
 
 		// Summation of ((# of occurences - E)^2)/E
 		for (int i = 0; i < degenerate; i++) {
@@ -194,54 +195,5 @@ public class CodonBias {
 		aa2codon.put("K", new String[]{"AAA", "AAG"});
 		aa2codon.put("R", new String[]{"CGT", "CGC", "CGA", "CGG", "AGA", "AGG"});
 		aa2codon.put("STOP", new String[]{"TAA", "TAG", "TGA"});
-	}
-
-	public static String reverse(String dna) {
-		return null;
-	}
-
-	public static String complement(String dna) {
-		return null;
-	}
-
-	public static String reverseComplement(String dna) {
-		return reverse(complement(dna));
-	}
-
-	public static void findGenes(String dna) {
-		/*
-		 * old code. Will probably never use.
-		
-		// FIND GENES AND COUNT NEUCLEOTIDES
-		dna = dna.substring(startPos, stopPos);
-		int i = 0;
-		boolean inGene = false;
-		//System.out.println(dna);
-		output.append("start,stop\n");
-		while (i < dna.length()-2) {
-			if (inGene) {
-				//if we are looking at the contents of the gene
-				if (STOP.contains(dna.substring(i, i+3))) {
-					output.append(i+"\n");
-					freq[ntoi(dna.charAt(i))][ntoi(dna.charAt(i+1))][ntoi(dna.charAt(i+2))]++;
-					inGene = false;
-					i+=3;
-				} else {
-					//this is a codon
-					freq[ntoi(dna.charAt(i))][ntoi(dna.charAt(i+1))][ntoi(dna.charAt(i+2))]++;
-					i+=3;
-				}
-			} else {
-				//if we haven't found the start codon yet
-				if (dna.substring(i, i + 3).equals(START)) {
-					output.append(i + ",");
-					inGene = true;
-					i+=3;
-				} else {
-					i++;
-				}
-			}
-		}
-		*/
 	}
 }
