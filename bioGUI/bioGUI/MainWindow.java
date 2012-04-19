@@ -1,6 +1,7 @@
 package bioGUI;
 
-import bioGUI.dialogs.InputDialog;
+import bioGUI.dialogs.CGContentDialog;
+import bioGUI.dialogs.CodonBiasDialog;
 
 import java.awt.event.ActionListener;
 
@@ -79,15 +80,27 @@ public class MainWindow extends JFrame {
       JMenuItem gcContent = new JMenuItem("Calculate GC Content");
       gcContent.addActionListener(new ActionListener() {
          public void actionPerformed(java.awt.event.ActionEvent e) {
-            InputDialog gcContentDialog = new InputDialog(mMainFrame, "GC Content Input Parameters");
+            CGContentDialog gcContentDialog = new CGContentDialog(mMainFrame, "GC Content Input Parameters");
 
             gcContentDialog.init();
             gcContentDialog.setVisible(true);
          }
       });
 
+      JMenuItem condonBias = new JMenuItem("Calculate Codon Bias");
+      condonBias.addActionListener(new ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent e) {
+            CodonBiasDialog codonBiasDialog = new CodonBiasDialog(mMainFrame, "Codon Bias Input Parameters");
+
+            codonBiasDialog.init();
+            codonBiasDialog.setVisible(true);
+         }
+      });
+      
+      
       JMenu analysisMenu = new JMenu("Analysis");
       analysisMenu.add(gcContent);
+      analysisMenu.add(condonBias);
 
       return analysisMenu;
    }

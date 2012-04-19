@@ -27,7 +27,7 @@ import javax.swing.BoxLayout;
 
 import java.io.File;
 
-public class InputDialog extends JDialog {
+public class CGContentDialog extends JDialog {
    /*
     * CONSTANTS
     */
@@ -42,7 +42,7 @@ public class InputDialog extends JDialog {
    private JTextField mFasta, mRangeBegin, mRangeEnd;
    private JComboBox mStrand;
 
-   public InputDialog() {
+   public CGContentDialog() {
       super();
 
       this.setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
@@ -64,7 +64,7 @@ public class InputDialog extends JDialog {
       mStrand = new JComboBox(STRAND_OPTIONS);
    }
 
-   public InputDialog(Frame owner, String title) {
+   public CGContentDialog(Frame owner, String title) {
       super(owner, title);
 
       this.setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
@@ -88,7 +88,7 @@ public class InputDialog extends JDialog {
    }
 
    public static void main(String[] args) {
-      InputDialog dialog = new InputDialog();
+      CGContentDialog dialog = new CGContentDialog();
 
       dialog.init();
       dialog.setVisible(true);
