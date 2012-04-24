@@ -2,6 +2,7 @@ package bioGUI;
 
 import bioGUI.dialogs.CGContentDialog;
 import bioGUI.dialogs.CodonBiasDialog;
+import bioGUI.dialogs.GffConcatenatorDialog;
 
 import java.awt.event.ActionListener;
 
@@ -96,11 +97,22 @@ public class MainWindow extends JFrame {
             codonBiasDialog.setVisible(true);
          }
       });
+
+      JMenuItem gffConcatenator = new JMenuItem("Concatenate GFF Files");
+      gffConcatenator.addActionListener(new ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent e) {
+        	 GffConcatenatorDialog gffConcatenatorDialog = new GffConcatenatorDialog(mMainFrame, "GFF Concatenator Input Parameters");
+
+            gffConcatenatorDialog.init();
+            gffConcatenatorDialog.setVisible(true);
+         }
+      });
       
       
       JMenu analysisMenu = new JMenu("Analysis");
       analysisMenu.add(gcContent);
       analysisMenu.add(condonBias);
+      analysisMenu.add(gffConcatenator);
 
       return analysisMenu;
    }

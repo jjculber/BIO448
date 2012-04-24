@@ -30,38 +30,14 @@ public class CodonBiasDialog extends JDialog {
    /*
     * CONSTANTS
     */
-   private final int DIALOG_HEIGHT = 400, DIALOG_WIDTH = 500;
-   private final String[] STRAND_OPTIONS = new String[] {"Positive", "Minus"};
+   private final int DIALOG_HEIGHT = 200, DIALOG_WIDTH = 400;
 
    /*
     * GUI Components
     */
    private Container mPane = null, mOwner = null;
    private JDialog mDialog = null;
-   private JTextField mGFF, mRangeBegin, mRangeEnd;
-   private JComboBox mStrand;
-
-   public CodonBiasDialog() {
-      super();
-
-      this.setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
-      this.setResizable(false);
-      this.setLocationRelativeTo(null);
-
-      mDialog = this;
-
-      mPane = this.getContentPane();
-      mPane.setLayout(new BoxLayout(mPane, BoxLayout.Y_AXIS));
-      mPane.setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
-
-      setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-
-      mGFF = new JTextField(20);
-      mRangeBegin = new JTextField(20);
-      mRangeEnd = new JTextField(20);
-
-      mStrand = new JComboBox(STRAND_OPTIONS);
-   }
+   private JTextField mGFF;
 
    public CodonBiasDialog(Frame owner, String title) {
       super(owner, title);
@@ -80,14 +56,10 @@ public class CodonBiasDialog extends JDialog {
       setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
       mGFF = new JTextField(20);
-      mRangeBegin = new JTextField(20);
-      mRangeEnd = new JTextField(20);
-
-      mStrand = new JComboBox(STRAND_OPTIONS);
    }
 
    public static void main(String[] args) {
-      CodonBiasDialog dialog = new CodonBiasDialog();
+      CodonBiasDialog dialog = new CodonBiasDialog(null, "Codon Bias");
 
       dialog.init();
       dialog.setVisible(true);
@@ -98,27 +70,11 @@ public class CodonBiasDialog extends JDialog {
     * input
     */
    public void init() {
-      JLabel fastaFileLabel = new JLabel("Select GFF File:");
-      JPanel fastaFileField = prepareFastaField(mGFF);
+      JLabel gffFileLabel = new JLabel("Select GFF File:");
+      JPanel gffFileField = prepareGffField(mGFF);
 
-      JPanel beginField = prepareRangeField("Start", mRangeBegin);
-      JPanel endField = prepareRangeField("End", mRangeEnd);
-
-      JPanel nucleotideRangeField = new JPanel();
-      nucleotideRangeField.setLayout(new FlowLayout(FlowLayout.LEADING));
-      nucleotideRangeField.add(beginField);
-      nucleotideRangeField.add(endField);
-
-      JPanel strandSelectionField = new JPanel();
-      strandSelectionField.setLayout(new FlowLayout(FlowLayout.LEADING));
-      strandSelectionField.add(new JLabel("Select strand to analyze:"));
-      strandSelectionField.add(mStrand);
-
-      mPane.add(fastaFileLabel);
-      mPane.add(fastaFileField);
-
-      mPane.add(nucleotideRangeField);
-      mPane.add(strandSelectionField);
+      mPane.add(gffFileLabel);
+      mPane.add(gffFileField);
 
       mPane.add(initControls());
 
@@ -129,7 +85,7 @@ public class CodonBiasDialog extends JDialog {
     * Convenience method for constructing a JPanel that contains the JTextField
     * and file browse button used for selecting a FASTA file.
     */
-   private JPanel prepareFastaField(JTextField fastaField) {
+   private JPanel prepareGffField(JTextField fastaField) {
       JPanel fastaFileField = new JPanel();
 
       fastaFileField.setLayout(new FlowLayout(FlowLayout.LEADING));
@@ -177,6 +133,7 @@ public class CodonBiasDialog extends JDialog {
     * nucleotide range parameters. This is abstracted so that it may be called
     * for both the start and end text fields.
     */
+   @SuppressWarnings("unused")
    private JPanel prepareRangeField(String labelPrefix, JTextField rangeInput) {
       JPanel rangeField = new JPanel();
 

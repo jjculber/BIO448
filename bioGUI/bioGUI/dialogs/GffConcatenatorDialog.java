@@ -1,38 +1,46 @@
 package bioGUI.dialogs;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
-import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.FlowLayout;
 
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JOptionPane;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JButton;
+import javax.swing.BoxLayout;
 
-public class CGContentDialog extends JDialog {
+
+import java.io.File;
+
+public class GffConcatenatorDialog extends JDialog {
    /*
     * CONSTANTS
     */
-   private final int DIALOG_HEIGHT = 350, DIALOG_WIDTH = 500;
+   private final int DIALOG_HEIGHT = 200, DIALOG_WIDTH = 500;
 
    /*
     * GUI Components
     */
    private Container mPane = null, mOwner = null;
    private JDialog mDialog = null;
-   private JTextField mFasta, mRangeBegin, mRangeEnd, mFrameSize, mFrameShift;
+   private JTextField mDir;
 
-   public CGContentDialog(Frame owner, String title) {
+   public GffConcatenatorDialog(Frame owner, String title) {
       super(owner, title);
 
       this.setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
@@ -48,16 +56,11 @@ public class CGContentDialog extends JDialog {
 
       setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
-      mFasta = new JTextField(20);
-      mRangeBegin = new JTextField(20);
-      mRangeEnd = new JTextField(20);
-      
-      mFrameSize = new JTextField(20);
-      mFrameShift = new JTextField(20);
+      mDir = new JTextField(20);
    }
 
    public static void main(String[] args) {
-      CGContentDialog dialog = new CGContentDialog(null, "GC Content");
+      GffConcatenatorDialog dialog = new GffConcatenatorDialog(null, "GFF Concatenator");
 
       dialog.init();
       dialog.setVisible(true);
@@ -68,32 +71,11 @@ public class CGContentDialog extends JDialog {
     * input
     */
    public void init() {
-      JLabel fastaFileLabel = new JLabel("Select FASTA File:");
-      JPanel fastaFileField = prepareFastaField(mFasta);
+      JLabel dirLabel = new JLabel("Select Directory that contain all GFF and FASTA files:");
+      JPanel dirField = prepareDirField(mDir);
 
-      JPanel beginField = prepareRangeField("Start Position:", mRangeBegin);
-      JPanel endField = prepareRangeField("End Position:", mRangeEnd);
-
-      JPanel nucleotideRangeField = new JPanel();
-      nucleotideRangeField.setLayout(new FlowLayout(FlowLayout.LEADING));
-      nucleotideRangeField.add(beginField);
-      nucleotideRangeField.add(endField);
-
-      JPanel frameSize = prepareRangeField("Frame Size:", mFrameSize);
-      JPanel frameShift = prepareRangeField("Frame Shift:", mFrameShift);
-      
-      JPanel frameField = new JPanel();
-      frameField.setLayout(new FlowLayout(FlowLayout.LEADING));
-      frameField.add(frameSize);
-      frameField.add(frameShift);
-      
-
-      mPane.add(fastaFileLabel);
-      mPane.add(fastaFileField);
-
-      mPane.add(nucleotideRangeField);
-      
-      mPane.add(frameField);
+      mPane.add(dirLabel);
+      mPane.add(dirField);
 
       mPane.add(initControls());
 
@@ -104,7 +86,7 @@ public class CGContentDialog extends JDialog {
     * Convenience method for constructing a JPanel that contains the JTextField
     * and file browse button used for selecting a FASTA file.
     */
-   private JPanel prepareFastaField(JTextField fastaField) {
+   private JPanel prepareDirField(JTextField fastaField) {
       JPanel fastaFileField = new JPanel();
 
       fastaFileField.setLayout(new FlowLayout(FlowLayout.LEADING));
@@ -152,12 +134,13 @@ public class CGContentDialog extends JDialog {
     * nucleotide range parameters. This is abstracted so that it may be called
     * for both the start and end text fields.
     */
+   @SuppressWarnings("unused")
    private JPanel prepareRangeField(String labelPrefix, JTextField rangeInput) {
       JPanel rangeField = new JPanel();
 
       rangeField.setLayout(new BoxLayout(rangeField, BoxLayout.Y_AXIS));
 
-      rangeField.add(new JLabel(labelPrefix));
+      rangeField.add(new JLabel(labelPrefix + " Position:"));
       rangeField.add(rangeInput);
 
       return rangeField;
@@ -194,7 +177,7 @@ public class CGContentDialog extends JDialog {
 
       okayButton.addActionListener(new ActionListener(){
          public void actionPerformed(ActionEvent e) {
-            if (mFasta.getText().equals("")) {
+            if (mDir.getText().equals("")) {
                JOptionPane.showMessageDialog(mOwner,
                 "No FASTA file was selected",
                 "Invalid File", JOptionPane.ERROR_MESSAGE);
@@ -202,7 +185,7 @@ public class CGContentDialog extends JDialog {
             }
             else
             {
-              //TODO GC Content work
+              // TODO Codon bias work
             }
             dispose();
          }
