@@ -129,8 +129,6 @@ public class CGContent {
 			shift = 1; 
 		}
 		
-		//System.out.println("number of slices: " + sliceCount);
-		
 		double[] sliceHistogram = new double[sliceCount];
 		double[] histogram = new double[sliceCount];
 		
@@ -144,7 +142,6 @@ public class CGContent {
 			//fill the sliceHistogram
 			//if it's the last index, go to the last nucleotide instead of out of bounds
 			//System.out.println("Subslice from codon " + i * shift + " to codon " + Math.min((i + 1) * shift, length));
-
 			
 			sliceHistogram[i] = gcCount(sub.substring(i * shift, Math.min((i + 1) * shift, length)));
 			//System.out.println(sliceHistogram[i] + "%"); 

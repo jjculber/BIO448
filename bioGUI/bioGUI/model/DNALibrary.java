@@ -54,7 +54,7 @@ public class DNALibrary {
 
 		csv.println("Start Codon,End Codon,GC Percentage");
 
-		Strand[] files = readStrandsFromFAFSA(filename);
+		Strand[] files = readStrandsFromGFF(filename);
 
 		i = 0;
 		for (Strand gene : files) {
@@ -173,52 +173,10 @@ public class DNALibrary {
 		return fileContents.toString();
 	}
 
+	/*
+	 * Read GFF file and returns array of strands
+	 */
 	public static Strand[] readStrandsFromGFF(String filename) {
-		ArrayList<Strand> strandsAL = new ArrayList<Strand>();
-
-		Strand[] strands = new Strand[0];
-
-		try {
-			File gene = new File(filename);
-			Scanner sc = new Scanner(gene);
-
-			sc.nextLine(); // ignore first line: browser position
-			sc.nextLine(); // track name, description, visibility, color
-
-			while (sc.hasNextLine()) {
-				Strand current = new Strand();
-
-				current.name = sc.next();
-				sc.next(); // GEP
-				sc.next(); // mRNA or CDS
-				current.start = sc.nextInt();
-				current.end = sc.nextInt();
-
-				// System.out.println(current.start + " " + current.end);
-
-				sc.next(); // dot
-				current.direction = sc.next().charAt(0);
-				sc.nextLine(); // dot
-				current.length = current.end - current.start;
-				if (current.end < current.start) {
-					int temp = current.start;
-					current.start = current.end;
-					current.end = temp;
-				}
-				strandsAL.add(current);
-
-			}
-			sc.close();
-		} catch (Exception ex) {
-			popupError(ex + " - Invalid Strand filename?");
-		}
-
-		strands = strandsAL.toArray(strands);
-
-		return strands;
-	}
-
-	public static Strand[] readStrandsFromFAFSA(String filename) {
 		ArrayList<Strand> strandsAL = new ArrayList<Strand>();
 
 		Strand[] strands = new Strand[0];
@@ -248,12 +206,7 @@ public class DNALibrary {
 							current.id.length() - 2);
 					current.transcriptId = current.transcriptId.substring(1,
 							current.transcriptId.length() - 2);
-
-					System.out.println(current.name + " " + current.type + " "
-							+ current.start + " " + current.end + " "
-							+ current.direction + " " + current.id + " "
-							+ current.transcriptId);
-
+					
 					current.length = current.end - current.start;
 					if (current.end < current.start) {
 						int temp = current.start;
@@ -262,7 +215,7 @@ public class DNALibrary {
 					}
 					strandsAL.add(current);
 				} catch (Exception ex) {
-					popupError("Problem reading FAFSA file" + ex);
+					popupError("Problem reading GFF file" + ex);
 				}
 
 			}
@@ -282,8 +235,7 @@ public class DNALibrary {
 		double[] slices = new double[(int) (1 + ((gene.length / shift)))];
 
 		if (shift > frame) {
-			System.err.println("Shift " + shift + " is larger than frame "
-					+ frame);
+			popupError("Shift " + shift + " is larger than frame " + frame);
 			return null;
 		}
 
@@ -316,7 +268,6 @@ public class DNALibrary {
 				}
 
 				current.gcPercent = (numerator * 100.0 / current.length);
-				// System.out.println(current.gcPercent);
 				strands.add(i, current);
 			}
 		} else {
@@ -345,6 +296,10 @@ public class DNALibrary {
 		return strands.toArray(ret);
 	}
 
+	/*
+	 * Calculates the GC Percent.
+	 * Returns a double between 0.0 and 100.0
+	 */
 	public static double gcCount(String dna) {
 		long total = 0;
 
@@ -355,6 +310,9 @@ public class DNALibrary {
 		return (double) total / dna.length() * 100;
 	}
 
+	/*
+	 * Calculates the total number of Gs or Cs in a DNA String
+	 */
 	public static int gcTotal(String dna) {
 		int total = 0;
 
@@ -365,11 +323,17 @@ public class DNALibrary {
 		return total;
 	}
 
+	/*
+	 * Convenience method for creating an error popup dialog
+	 */
 	public static void popupError(String message) {
 		JOptionPane.showMessageDialog(null, message, "Error",
 				JOptionPane.ERROR_MESSAGE);
 	}
 
+	/*
+	 * Bean for holding information about a DAN strand
+	 */
 	public static class Strand {
 		String bases;
 		// Name of the file this strand came from
@@ -401,8 +365,7 @@ public class DNALibrary {
 			this.length = end - start;
 
 			if (this.direction != '+' && this.direction != '-')
-				popupError("Strand made with odd direction "
-						+ direction);
+				popupError("Strand made with odd direction " + direction);
 		}
 
 		public Strand(String filename, int start, int end,
