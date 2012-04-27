@@ -7,17 +7,38 @@ import java.lang.StringBuilder;
 
 import java.lang.Math; 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
 
-public static class DNALibrary {
+public class DNALibrary {
    public static File inputFile;
 	public static Map<String, String[]> aa2codon = new HashMap<String, String[]>();
 	public static int[][][] freq = new int[4][4][4];
 	
-	public static void main(String[] args) throws NumberFormatException, IOException {
+	public static void main(String[] args) throws Exception {
+		//**DNA Concatenator main**
+		Scanner sc = new Scanner(System.in); 
+		String gffFolder, fastaFolder; 
+		
+		System.out.println("DNA Concatenator");
+		
+		//FASTA is unimplemented
+		System.out.println("What folder would you like to read FASTA files from?");
+		fastaFolder = sc.nextLine();
+		
+		System.out.println("What folder would you like to read GFF files from?");
+		gffFolder = sc.nextLine(); 
+		
+		outputGFF(concatGFF(gffFolder), gffFolder + ".gff");
+	
+		
+		/*	**GCContent Main** Uncomment for GCContent command line interface
+		
 			int i = 0, frame = 0, shift = 0; 
 			boolean valid = false; 
 			Scanner sc = new Scanner(System.in); 
@@ -75,6 +96,7 @@ public static class DNALibrary {
 			
 			System.out.println("Done! File " +filename.substring(0, filename.lastIndexOf('.')) + ".csv" + " written.");
 			System.out.println("Done. Goodbye.");
+			*/
 	}
 	
 	/**
@@ -168,58 +190,8 @@ public static class DNALibrary {
 		return fileContents.toString(); 
 	}
 
-	public static Strand[] readStrandsFromGFF(String filename)
-	{	
-		ArrayList<Strand> strandsAL = new ArrayList<Strand>();  
-		
-		Strand[] strands = new Strand[0]; 
-		
-		try
-		{
-			File gene = new File(filename);
-			Scanner sc = new Scanner(gene);
-
-			sc.nextLine(); //ignore first line: browser position
-			sc.nextLine(); // track name, description, visibility, color
-			
-			while (sc.hasNextLine()) 
-			{
-				Strand current = new Strand(); 
-				
-				current.name = sc.next();
-				sc.next(); // GEP
-				sc.next(); //mRNA or CDS
-				current.start = sc.nextInt(); 
-				current.end = sc.nextInt(); 
-				
-				//System.out.println(current.start + " " + current.end);
-				
-				sc.next(); //dot
-				current.direction = sc.next().charAt(0); 
-				sc.nextLine(); //dot
-				current.length = current.end - current.start;
-				if(current.end < current.start)
-				{
-					int temp = current.start;
-					current.start = current.end;
-					current. end = temp; 
-				}
-				strandsAL.add(current); 
-				
-			}
-			sc.close(); 
-		}
-		catch(Exception ex)
-		{
-			System.out.println(ex + " - Invalid Strand filename?");
-		}
-		
-		strands = strandsAL.toArray(strands);
-		
-		return strands;
-	}
 	
-	public static Strand[] readStrandsFromFAFSA(String filename)
+	public static Strand[] readStrandsFromGFF(String filename)
 	{	
 		ArrayList<Strand> strandsAL = new ArrayList<Strand>();  
 		
@@ -438,9 +410,127 @@ public static class DNALibrary {
 		aa2codon.put("R", new String[]{"CGT", "CGC", "CGA", "CGG", "AGA", "AGG"});
 		aa2codon.put("STOP", new String[]{"TAA", "TAG", "TGA"});
 	}
-
 	
-	public static class Strand
+
+	//read all the files in a folder
+	public static void concatFASTA(String folder) throws FileNotFoundException
+	{
+		int i;
+		File inFolder = new File(folder);
+		String filename[] = inFolder.list();
+		FASTAFile[] parts = new FASTAFile[filename.length]; 
+		
+		for (i = 0; i < filename.length; i++)
+		{
+			File current = new File(filename[i]);
+			parts[i] = readFastaStrand(current);
+		}
+		
+		for(i = 0; i < filename.length - 1; i++)
+		{
+			//concatenate FASTAFile[i] and FASTAFile[i + 1] 
+		}
+	}
+	
+	//read all the files in a folder
+	//TODO: add an array of offsets for each contig based on FASTA output
+	public static List<Strand> concatGFF(String folder) throws FileNotFoundException
+	{
+		int i;
+		List<Strand> parts = new ArrayList<Strand>(); 
+		File inFolder = null;
+		try
+		{
+			inFolder = new File(folder);
+		}
+		catch(Exception ex)
+		{
+			System.err.println("Folder " + folder + " not found.");
+			return null;
+		}
+		
+		String filename[] = inFolder.list();
+		
+		for (i = 0; i < filename.length; i++)
+		{	
+			List<Strand> newstrands =  Arrays.asList(readStrandsFromGFF(folder + '/' + filename[i]));
+			for(Strand s : newstrands)
+			{
+				if(s != null && !parts.contains(s))
+					parts.add(s);
+			}	
+		}
+		Collections.sort(parts);
+		return parts; 
+	}
+	
+	/**
+	 * Takes a list of GFFs and outputs one big GFF file 
+	 * @param gffs
+	 * @param outputname the name of the file to write. Add the extension, this method doesn't. 
+	 * @throws IOException
+	 */
+	public static void outputGFF(List<Strand> gffs, String outputname) throws IOException
+	{
+		PrintWriter out = new PrintWriter(new FileWriter(outputname));
+		for(Strand s : gffs)
+		{
+			out.printf("%s\t.\t%s\t%d\t%d\t.\t%c\t.\tgene_id \"%s\"; transcript_id \"%s\";\n",s.name,s.type,s.start,s.end,s.direction,s.id,s.transcriptId);
+		}
+		out.close();
+		
+	}
+	
+	//Outputs a fasta file with the name of the input
+	public static void outputFastaFile(FASTAFile input, String name) throws IOException
+	{
+		try{
+			PrintWriter fna = new PrintWriter(new FileWriter(input.name+"FULL.fna"));
+			fna.printf(">%s range=%s:1-%d    \n", input.name, input.fosmid,input.length);
+			
+			for(int i = 0; i < input.length; i += 50)
+			{
+				fna.print("      ");
+				fna.println(input.data.substring(i * 50, Math.min(i + 1, input.length)));
+			}
+			System.out.println("FASTA file " + name + " written");
+			fna.close();
+		}
+		catch(Exception ex)
+		{
+			System.err.println("FASTA file " + name + " NOT written");
+		}
+	}
+	
+	public static FASTAFile readFastaStrand(File fasta) throws FileNotFoundException
+	{
+		FASTAFile out = new FASTAFile();
+		Scanner sc = new Scanner(fasta);
+		
+		out.name = sc.next().substring(1);
+		
+		String info  = sc.next();
+		out.fosmid = info.substring(info.indexOf('=') + 1, info.indexOf(':'));
+		out.length = Integer.parseInt(info.substring(info.indexOf('-')));
+		
+		while(sc.hasNextLine())
+			out.data += sc.nextLine();
+		
+		return out; 
+	}
+	
+	//Representation of a FASTA file, basically a long string of bases
+	public static class FASTAFile
+	{
+		String name;
+		int number; 
+		String fosmid;
+		int length; 
+		String data;
+	}
+
+
+	public static class Strand implements Comparable<Strand>
 	{
 		String bases; 
 		//Name of the file this strand came from
@@ -530,8 +620,26 @@ public static class DNALibrary {
 			}
 			this.bases = fileContents.toString(); 
 		}
+		public boolean equals(Object other)
+		{
+			if(other == null || other.getClass() != this.getClass())
+				return false;
+			
+			return (this.start == ((Strand)other).start
+					&& this.end == ((Strand)other).end
+					&& this.direction == ((Strand)other).direction
+					&& this.transcriptId.equals(((Strand)other).transcriptId));
+			
+		}
+
+		@Override
+		public int compareTo(Strand o) {
+			return Integer.parseInt(this.name.substring("contig".length())) 
+					- Integer.parseInt(o.name.substring("contig".length()));
+		}
 		
 	}
+	
 }
 
 
