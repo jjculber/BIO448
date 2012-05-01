@@ -179,7 +179,7 @@ public class GffConcatenatorDialog extends JDialog {
          public void actionPerformed(ActionEvent e) {
             if (mDir.getText().equals("")) {
                JOptionPane.showMessageDialog(mOwner,
-                "No FASTA file was selected",
+                "No directory file was selected",
                 "Invalid File", JOptionPane.ERROR_MESSAGE);
                return;
             }

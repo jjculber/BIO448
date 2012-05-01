@@ -23,6 +23,8 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.BoxLayout;
 
+import bioGUI.model.DNALibrary;
+
 
 import java.io.File;
 
@@ -178,13 +180,14 @@ public class CodonBiasDialog extends JDialog {
          public void actionPerformed(ActionEvent e) {
             if (mGFF.getText().equals("")) {
                JOptionPane.showMessageDialog(mOwner,
-                "No FASTA file was selected",
+                "No GFF file was selected",
                 "Invalid File", JOptionPane.ERROR_MESSAGE);
                return;
             }
             else
             {
               // TODO Codon bias work
+            	DNALibrary.calcCodonBias(mGFF.getText());
             }
             dispose();
          }

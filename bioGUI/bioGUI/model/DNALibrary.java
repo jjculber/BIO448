@@ -1,5 +1,6 @@
 package bioGUI.model;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -9,6 +10,9 @@ import java.lang.StringBuilder;
 
 import java.lang.Math;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
@@ -321,6 +325,175 @@ public class DNALibrary {
 				total++;
 		}
 		return total;
+	}
+	
+	/*
+	 * Given a file name, calculate the codon bias and output to file
+	 */
+	public static void calcCodonBias(String filename) {
+		try {
+		File gffFile;
+		FileWriter outFile;
+		String outFileName;
+		BufferedWriter out;
+		StringBuffer output = new StringBuffer();
+		Scanner sc;
+		
+		gffFile = new File(filename);
+
+		Strand[] exons = DNALibrary.readStrandsFromGFF(filename);
+
+		String path = gffFile.getParent() + "/";		
+				
+		String fastaFileName = path + exons[0].name + ".txt";
+		File fastaFile = new File(fastaFileName);
+
+		// SET UP INPUT FILE
+		StringBuffer input = new StringBuffer();
+		sc = new Scanner(fastaFile);
+		
+		sc.nextLine();
+		while (sc.hasNextLine()) {
+			input.append(sc.nextLine());
+		}
+		
+		String dna = input.toString();
+
+		// FIND GENES AND COUNT NEUCLEOTIDES
+		StringBuffer concat = new StringBuffer();
+		for (Strand gff : exons) {
+			System.out.println(gff.start + " " + gff.end + " " + gff.direction);
+			if (gff.start < dna.length() && gff.end < dna.length()) {
+				if (gff.start < gff.end) {
+					concat.append(dna.substring(gff.start, gff.end));
+				} else {
+					concat.append(DNALibrary.reverseComplement(dna.substring(gff.end, gff.start)));
+				}
+			}
+		}
+
+		String all = concat.toString();
+
+		int[][][] freq = new int[4][4][4];
+		
+		int i = 0;
+		while (i < all.length()-2) {
+			freq[ntoi(all.charAt(i))][ntoi(all.charAt(i+1))][ntoi(all.charAt(i+2))]++;
+			i+=3;
+		}
+		
+		
+		outFileName = path + gffFile.getName() + "_CodonFrequency.csv";
+		outFile = new FileWriter(outFileName);
+		out = new BufferedWriter(outFile);
+		output = new StringBuffer();
+		output.append("Codon, frequency\n");
+
+		// PRINT ALL CODONS AND COUNTS
+		for (char one : Arrays.asList('T', 'C', 'A', 'G')) {
+			for (char two : Arrays.asList('T', 'C', 'A', 'G')) {
+				for (char three : Arrays.asList('T', 'C', 'A', 'G')) {
+					output.append(""+one+three+two+","+getFreq(""+one+two+three, freq)+"\n");
+				}
+				//System.out.println();
+			}	
+			//System.out.println();
+		}
+		
+		out.write(output.toString().toCharArray());
+		out.flush();
+		out.close();
+		outFileName = path + gffFile.getName() + "_CodonBias.csv";
+
+		outFile = new FileWriter(outFileName);
+		out = new BufferedWriter(outFile);
+		output = new StringBuffer();
+		output.append("AA, chi squared, codon, frequency, percent\n");
+	
+		// PRINT CODON AND COUNT GROUPED BY AMINO ACID
+		Map<String, String[]> aa2codon = initAA();	
+		for (String aa : aa2codon.keySet()) {
+			output.append(aa + "," + chiSq(aa, freq)+"\n");
+			String[] codons = aa2codon.get(aa);
+			int total = 0;
+			for (String codon : codons) 
+				total += getFreq(codon, freq);
+			
+			for (String codon : codons){
+				output.append(",," + codon +","+getFreq(codon, freq) + "," + ((double) getFreq(codon, freq)/total*100.0)+"\n");
+			}
+		}
+		
+		out.write(output.toString().toCharArray());
+		out.flush();
+		out.close();
+		} catch (Exception e) {
+			popupError("An error occurred!\n Send this message to Justin at jjculber@calpoly.edu.\n" + e.getMessage());
+		}
+	}
+	
+	public static double chiSq(String aminoAcid, int[][][] counts) {
+		Map<String, String[]> aa2codon = initAA();
+		String[] codons = aa2codon.get(aminoAcid);
+		int degenerate = codons.length;
+		int[] freqs = new int[degenerate];
+		int total = 0;
+		double e;
+		double sum = 0.0;
+
+		for (int i = 0; i < degenerate; i++) {
+			freqs[i] = getFreq(codons[i], counts);
+			total += freqs[i];
+		}
+		e = (double) total / degenerate;
+
+		// Summation of ((# of occurences - E)^2)/E
+		for (int i = 0; i < degenerate; i++) {
+			sum += Math.pow(freqs[i]-e, 2.0) / e;
+		}
+
+		return sum;
+	}
+	
+	public static int getFreq(String codon, int[][][] freqTable) {
+		return freqTable[ntoi(codon.charAt(0))][ntoi(codon.charAt(2))][ntoi(codon.charAt(1))];
+	}
+	
+	public static int ntoi(char neucleotide) {
+		if (neucleotide == 'A')
+			return 0;
+		else if (neucleotide == 'C')
+			return 1;
+		else if (neucleotide == 'G')
+			return 2;
+		return 3;
+	}
+	
+	public static Map<String, String[]> initAA() {
+		Map<String, String[]> aa2codon = new HashMap<String, String[]>();
+		
+		aa2codon.put("I", new String[]{"ATT", "ATC", "ATA"});
+		aa2codon.put("L", new String[]{"CTT", "CTC", "CTA", "CTG", "TTA", "TTG"});
+		aa2codon.put("V", new String[]{"GTT", "GTC", "GTA", "GTG"});
+		aa2codon.put("F", new String[]{"TTT", "TTC"});
+		aa2codon.put("M", new String[]{"ATG"});
+		aa2codon.put("C", new String[]{"TGT", "TGC"});
+		aa2codon.put("A", new String[]{"GCT", "GCC", "GCA", "GCG"});
+		aa2codon.put("G", new String[]{"GGT", "GGC", "GGA", "GGG"});
+		aa2codon.put("P", new String[]{"CCT", "CCC", "CCA", "CCG"});
+		aa2codon.put("T", new String[]{"ACT", "ACC", "ACA", "ACG"});
+		aa2codon.put("S", new String[]{"TCT", "TCC", "TCA", "TCG", "AGT", "AGC"});
+		aa2codon.put("Y", new String[]{"TAT", "TAC"});
+		aa2codon.put("W", new String[]{"TGG"});
+		aa2codon.put("Q", new String[]{"CAA", "CAG"});
+		aa2codon.put("N", new String[]{"AAT", "AAC"});
+		aa2codon.put("H", new String[]{"CAT", "CAC"});
+		aa2codon.put("E", new String[]{"GAA", "GAG"});
+		aa2codon.put("D", new String[]{"GAT", "GAC"});
+		aa2codon.put("K", new String[]{"AAA", "AAG"});
+		aa2codon.put("R", new String[]{"CGT", "CGC", "CGA", "CGG", "AGA", "AGG"});
+		aa2codon.put("STOP", new String[]{"TAA", "TAG", "TGA"});
+		return aa2codon;
 	}
 
 	/*
