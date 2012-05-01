@@ -99,6 +99,46 @@ public class DNALibrary {
 			*/
 	}
 	
+	public static void printGCtoCSV(int frame, int shift, String gffFile, String csvFile) throws IOException
+	{
+		int i = 0;
+		boolean valid = false; 
+		Scanner sc = new Scanner(System.in); 
+
+		PrintWriter csv;
+		csv = new PrintWriter(new FileWriter(csvFile));
+
+
+		csv.println("Start Codon,End Codon,GC Percentage"); 			
+
+		Strand[] files = readStrandsFromGFF(gffFile);
+		
+		i = 0;
+		for(Strand gene : files)
+		{
+			Strand[] frames;
+			i++;
+			System.out.println(gene.name + " " + gene.start + " " + gene.end);
+			
+			String input = readContig(gene.name + ".txt", gene.start, gene.end);
+			gene.bases = input;
+			frames = gcPercentage(gene, frame, shift);
+			
+			for(Strand section : frames)
+			{
+				csv.printf("%d,%d,%.1f%%\n", gene.start + section.start, gene.start + section.end, section.gcPercent);
+				
+				//System.out.printf("%d,%d,%.1f%%\n", gene.start + section.start, gene.start + section.end, section.gcPercent);
+			}
+			csv.println();
+		}
+		csv.close();
+		
+		//System.out.println("Done! File " +filename.substring(0, filename.lastIndexOf('.')) + ".csv" + " written.");
+		//System.out.println("Done. Goodbye.");
+	}
+	
+	
 	/**
 	 * Returns the reverse complement of a strand of DNA
 	 */
