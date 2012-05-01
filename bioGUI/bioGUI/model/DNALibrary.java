@@ -62,7 +62,7 @@ public class DNALibrary {
 			i++;
 			System.out.println(gene.name + " " + gene.start + " " + gene.end);
 
-			String input = readGene(gene.name + ".txt", gene.start, gene.end);
+			String input = readFASTA(gene.name + ".txt", gene.start, gene.end);
 			gene.bases = input;
 			frames = gcPercentage(gene, frame, shift);
 
@@ -125,7 +125,7 @@ public class DNALibrary {
 	}
 
 	/**
-	 * Reads a contig (?) file and outputs the nucleotide sequence in the
+	 * Reads a FASTA file and outputs the nucleotide sequence in the
 	 * specified range
 	 * 
 	 * @param filename
@@ -133,7 +133,7 @@ public class DNALibrary {
 	 * @param end
 	 * @return
 	 */
-	public static String readGene(String filename, int start, int end) {
+	public static String readFASTA(String filename, int start, int end) {
 		int i;
 		StringBuilder fileContents = new StringBuilder();
 

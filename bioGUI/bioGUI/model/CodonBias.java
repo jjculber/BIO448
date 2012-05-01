@@ -25,8 +25,6 @@ public class CodonBias {
 		StringBuffer output = new StringBuffer();
 		int startPos, stopPos;
 		Scanner sc = new Scanner(System.in);
-		final String START = "ATG";
-		final List<String> STOP = Arrays.asList("TAA", "TAG", "TGA");
 		
 		// USER INPUT
 		System.out.println("Please enter the GFF file name:");
