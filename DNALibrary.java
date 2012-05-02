@@ -31,6 +31,8 @@ public class DNALibrary {
 		System.out.println("What folder would you like to read FASTA files from?");
 		fastaFolder = sc.nextLine();
 		
+		outputFastaFile(concatFASTA(fastaFolder), fastaFolder + "master.fna");
+		
 		System.out.println("What folder would you like to read GFF files from?");
 		gffFolder = sc.nextLine(); 
 		
@@ -99,6 +101,121 @@ public class DNALibrary {
 			*/
 	}
 	
+	/**
+	 * Puts two overalpping strands together
+	 * <pre> strands must be in order
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	public static Strand concatenate(Strand a, Strand b)
+	{
+		String s1 = a.bases;
+		String s2 = b.bases; 
+
+		String input = s2 + '$' + s1; 
+		
+		int[] indices = computePi(input); 
+		int overlap = arrayMaxIndex(indices);
+
+		String whole = s1 + s2.substring(indices[overlap] + (indices.length - 1 - overlap)); 
+		
+		Strand both = new Strand();
+		
+		both.bases = whole; 
+		
+		both.end = b.end; 
+		both.start = a.start; 
+		both.id = a.id;
+		both.length = whole.length(); 
+		both.direction = a.direction; 
+		both.name = a.name;
+		both.transcriptId = a.transcriptId;
+		both.type = a.type; 
+		
+		return both; 
+	}
+	
+	/**
+	 * Puts two overalpping strands together
+	 * <pre> strands must be in order
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	public static FASTAFile concatenate(FASTAFile a, FASTAFile b)
+	{
+		String s1 = a.data;
+		String s2 = b.data; 
+
+		String input = s2 + '$' + s1; 
+		
+		int[] indices = computePi(input); 
+		
+		//System.out.println(Arrays.toString(computePi(input)));
+		
+		int overlap = arrayMaxIndex(indices);
+		
+		String whole = s1 + s2.substring(indices[overlap] + (indices.length - 1 - overlap)); 
+		
+		
+		
+		FASTAFile both = new FASTAFile();
+		
+		both.data = whole;
+		both.length = whole.length();
+		both.name = a.name;
+		both.fosmid = a.fosmid;
+		both.number = b.number; 
+		
+		return both; 
+	}
+	
+	/**
+	 * Returns the index of the largest int in an int array
+	 * @param array
+	 * @return
+	 */
+	public static int arrayMaxIndex(int[] array)
+	{
+		if(array.length == 0)
+			return 0;
+		int max = 0;
+		for (int i = 0; i < array.length; i++) 
+		{
+			if(array[i] > array[max])
+				max = i;
+		}
+		
+		return max; 
+	}
+	
+	
+	//Taken from Professor Staley's 349 lecture
+	public static int[] computePi(String s)
+	{	
+		char[] pattern = s.toCharArray(); 
+
+		// Figure pi using the standard KMP algorithm. Ignore 0-element of pi, 
+		// so that pi[x] is always "amount we can recover after matching x chars" 
+		int[] pi = new int[pattern.length+1];
+		int nextChr, pfxLen;
+		pfxLen = 0; // Prefix we've matched against ourselves so far
+
+		for (nextChr = 1; nextChr < pattern.length; nextChr++)
+		{
+			while (pattern[pfxLen] != pattern[nextChr] && pfxLen > 0)
+				pfxLen = pi[pfxLen];
+
+			if (pattern[pfxLen] == pattern[nextChr]) 
+				pfxLen++;
+
+			pi[nextChr+1] = pfxLen;
+		}
+		return pi; 
+	}
+	
+	
 	public static void printGCtoCSV(int frame, int shift, String gffFile, String csvFile) throws IOException
 	{
 		int i = 0;
@@ -118,7 +235,7 @@ public class DNALibrary {
 		{
 			Strand[] frames;
 			i++;
-			System.out.println(gene.name + " " + gene.start + " " + gene.end);
+			//System.out.println(gene.name + " " + gene.start + " " + gene.end);
 			
 			String input = readContig(gene.name + ".txt", gene.start, gene.end);
 			gene.bases = input;
@@ -223,8 +340,8 @@ public class DNALibrary {
 		}
 		catch(FileNotFoundException ex)
 		{
-			System.out.println(ex + " - Invalid filename?");
-			System.out.println("There's something wrong with the way you typed " + filename + " or something bad happened");
+			System.err.println(ex + " - Invalid filename?");
+			System.err.println("There's something wrong with the way you typed " + filename + " or something bad happened");
 		}
 		
 		return fileContents.toString(); 
@@ -263,7 +380,7 @@ public class DNALibrary {
 				current.id = current.id.substring(1, current.id.length() - 2);
 				current.transcriptId = current.transcriptId.substring(1, current.transcriptId.length() - 2);
 				
-				System.out.println(current.name + " " + current.type + " " + current.start + " " + current.end + " " + current.direction + " " + current.id + " " + current.transcriptId);
+				//System.out.println(current.name + " " + current.type + " " + current.start + " " + current.end + " " + current.direction + " " + current.id + " " + current.transcriptId);
 				
 				
 				current.length = current.end - current.start;
@@ -453,23 +570,34 @@ public class DNALibrary {
 	
 
 	//read all the files in a folder
-	public static void concatFASTA(String folder) throws FileNotFoundException
+	public static FASTAFile concatFASTA(String folder) throws FileNotFoundException
 	{
 		int i;
 		File inFolder = new File(folder);
 		String filename[] = inFolder.list();
 		FASTAFile[] parts = new FASTAFile[filename.length]; 
+		FASTAFile master; 
 		
 		for (i = 0; i < filename.length; i++)
 		{
-			File current = new File(filename[i]);
+			File current = new File(folder + "/" + filename[i]);
 			parts[i] = readFastaStrand(current);
 		}
 		
-		for(i = 0; i < filename.length - 1; i++)
+		List<FASTAFile> sortMe = Arrays.asList(parts);
+		
+		Collections.sort(sortMe); 
+		
+		parts = sortMe.toArray(parts); 
+		
+		master = parts[0]; 
+		for(i = 1; i < filename.length; i++)
 		{
 			//concatenate FASTAFile[i] and FASTAFile[i + 1] 
+			master = concatenate(master, parts[i]);
 		}
+		
+		return master; 
 	}
 	
 	//read all the files in a folder
@@ -525,19 +653,20 @@ public class DNALibrary {
 	public static void outputFastaFile(FASTAFile input, String name) throws IOException
 	{
 		try{
-			PrintWriter fna = new PrintWriter(new FileWriter(input.name+"FULL.fna"));
+			PrintWriter fna = new PrintWriter(new FileWriter(name));
 			fna.printf(">%s range=%s:1-%d    \n", input.name, input.fosmid,input.length);
 			
 			for(int i = 0; i < input.length; i += 50)
 			{
 				fna.print("      ");
-				fna.println(input.data.substring(i * 50, Math.min(i + 1, input.length)));
+				fna.println(input.data.substring(i, Math.min((i + 50), input.data.length())));
 			}
 			System.out.println("FASTA file " + name + " written");
 			fna.close();
 		}
 		catch(Exception ex)
 		{
+			ex.printStackTrace();
 			System.err.println("FASTA file " + name + " NOT written");
 		}
 	}
@@ -551,22 +680,37 @@ public class DNALibrary {
 		
 		String info  = sc.next();
 		out.fosmid = info.substring(info.indexOf('=') + 1, info.indexOf(':'));
-		out.length = Integer.parseInt(info.substring(info.indexOf('-')));
+		out.number = Integer.parseInt(out.fosmid.substring("contig".length()));
+		out.length = Integer.parseInt(info.substring(info.indexOf('-')).trim());
 		
-		while(sc.hasNextLine())
-			out.data += sc.nextLine();
+
+		
+		while(sc.hasNext())
+		{
+			String temp = sc.next();
+			if (out.data != null)
+				out.data += temp;
+			else out.data = temp; 
+		}
+			
 		
 		return out; 
 	}
 	
 	//Representation of a FASTA file, basically a long string of bases
-	public static class FASTAFile
+	public static class FASTAFile implements Comparable<FASTAFile>
 	{
 		String name;
 		int number; 
 		String fosmid;
 		int length; 
 		String data;
+		
+		@Override
+		public int compareTo(FASTAFile arg0) {
+			return this.number - arg0.number; 
+		}
+		
 	}
 
 
