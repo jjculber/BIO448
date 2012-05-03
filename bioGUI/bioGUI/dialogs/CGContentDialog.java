@@ -19,11 +19,13 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import bioGUI.model.DNALibrary;
+
 public class CGContentDialog extends JDialog {
    /*
     * CONSTANTS
     */
-   private final int DIALOG_HEIGHT = 350, DIALOG_WIDTH = 500;
+   private final int DIALOG_HEIGHT = 450, DIALOG_WIDTH = 500;
 
    /*
     * GUI Components
@@ -202,7 +204,30 @@ public class CGContentDialog extends JDialog {
             }
             else
             {
-              //TODO GC Content work
+            	int start, end, size, shift;
+            	
+            	try {
+            		start = Integer.parseInt(mRangeBegin.getText());
+            	} catch (Exception ex) {
+            		start = 0;
+            	}
+            	
+            	try {
+            		end = Integer.parseInt(mRangeEnd.getText());
+            	} catch (Exception ex) {
+            		end = 0;
+            	}
+
+            	try {
+            		size = Integer.parseInt(mFrameSize.getText());
+            		shift = Integer.parseInt(mFrameShift.getText());
+            		
+                	DNALibrary.calcGCContent(mFasta.getText(), start, end, size, shift);
+
+            	} catch (Exception ex) {
+            		DNALibrary.popupError("Bad Frame size or shift.");
+            	}
+            	
             }
             dispose();
          }

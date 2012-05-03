@@ -423,9 +423,41 @@ public class DNALibrary {
 		out.write(output.toString().toCharArray());
 		out.flush();
 		out.close();
-		popupError("Saved CSV output files in " + path);
+		popupMessage("Saved CSV output files in " + path);
 		} catch (Exception e) {
 			popupError("An error occurred!\n" + e.getMessage());
+		}
+	}
+	
+	public static void calcGCContent(String fastaFilename, int start, int end, int frameSize, int frameShift) {
+		try {
+			String dna = readFASTA(fastaFilename, start, end);
+
+			Strand gene = new Strand(start, end, '+', dna);
+			Strand[] frames = gcPercentage(gene, frameSize, frameShift);
+
+			File fastaFile = new File(fastaFilename);
+			String path = fastaFile.getParent();
+
+			String outFileName = path + fastaFile.getName() + "_GCContent.csv";
+			FileWriter outFile = new FileWriter(outFileName);
+			BufferedWriter out = new BufferedWriter(outFile);
+			StringBuffer output = new StringBuffer();
+			output.append("Start Pos, End Pos, CG Percent\n");
+
+			for (Strand frame : frames) {
+				output.append(frame.start + "," + frame.end + ","
+						+ frame.gcPercent + "\n");
+			}
+
+			out.write(output.toString().toCharArray());
+			out.flush();
+			out.close();
+
+			popupMessage("Ouput CSV file saved in " + path);
+		} catch (Exception e) {
+			e.printStackTrace();
+			popupError("An Error occurred!\n" + e.getMessage());
 		}
 	}
 	
@@ -499,6 +531,13 @@ public class DNALibrary {
 	public static void popupError(String message) {
 		JOptionPane.showMessageDialog(null, message, "Error",
 				JOptionPane.ERROR_MESSAGE);
+	}
+	
+	/*
+	 * Convenience method for a warning popup dialog
+	 */
+	public static void popupMessage(String message) {
+		JOptionPane.showMessageDialog(null, message, "", JOptionPane.PLAIN_MESSAGE);
 	}
 
 	/*

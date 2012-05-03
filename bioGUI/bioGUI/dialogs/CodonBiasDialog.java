@@ -4,20 +4,14 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.Frame;
-import java.awt.Dialog;
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.FlowLayout;
 
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JOptionPane;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
@@ -32,7 +26,7 @@ public class CodonBiasDialog extends JDialog {
    /*
     * CONSTANTS
     */
-   private final int DIALOG_HEIGHT = 200, DIALOG_WIDTH = 400;
+   private final int DIALOG_HEIGHT = 200, DIALOG_WIDTH = 500;
 
    /*
     * GUI Components
@@ -72,10 +66,12 @@ public class CodonBiasDialog extends JDialog {
     * input
     */
    public void init() {
-      JLabel gffFileLabel = new JLabel("Select GFF File:");
+	  JLabel gffFileLabel1 = new JLabel("(required FASTA files must be in the same directory)");
+      JLabel gffFileLabel2 = new JLabel("Select GFF File:");
       JPanel gffFileField = prepareGffField(mGFF);
 
-      mPane.add(gffFileLabel);
+      mPane.add(gffFileLabel1);
+      mPane.add(gffFileLabel2);
       mPane.add(gffFileField);
 
       mPane.add(initControls());
