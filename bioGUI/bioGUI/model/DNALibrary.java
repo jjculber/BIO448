@@ -427,8 +427,9 @@ public class DNALibrary {
 		out.write(output.toString().toCharArray());
 		out.flush();
 		out.close();
+		popupError("Saved CSV output files in " + path);
 		} catch (Exception e) {
-			popupError("An error occurred!\n Send this message to Justin at jjculber@calpoly.edu.\n" + e.getMessage());
+			popupError("An error occurred!\n" + e.getMessage());
 		}
 	}
 	
