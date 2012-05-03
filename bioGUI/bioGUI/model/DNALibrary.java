@@ -24,7 +24,6 @@ public class DNALibrary {
 			IOException {
 		int i = 0, frame = 0, shift = 0;
 		boolean valid = false;
-		char isStrand = '\0';
 		Scanner sc = new Scanner(System.in);
 		String filename = null;
 
@@ -90,9 +89,6 @@ public class DNALibrary {
 	 * Returns the reverse complement of a strand of DNA
 	 */
 	public static String reverseComplement(String gene) {
-
-		int length = gene.length();
-
 		StringBuilder reverse = new StringBuilder();
 
 		for (int i = gene.length(); i > 0; --i) {
