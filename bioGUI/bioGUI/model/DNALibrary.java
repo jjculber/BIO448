@@ -11,7 +11,9 @@ import java.lang.StringBuilder;
 import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -20,91 +22,179 @@ import javax.swing.JOptionPane;
 public class DNALibrary {
 	public static File inputFile;
 
-	public static void main(String[] args) throws NumberFormatException,
-			IOException {
-		int i = 0, frame = 0, shift = 0;
-		boolean valid = false;
-		Scanner sc = new Scanner(System.in);
-		String filename = null;
+	/**
+	 * Puts two overalpping strands together
+	 * <pre> strands must be in order
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	public static Strand concatenate(Strand a, Strand b)
+	{
+		String s1 = a.bases;
+		String s2 = b.bases; 
 
-		System.out.println("GC Content Analyzer, now GFF only!");
+		String input = s2 + '$' + s1; 
+		
+		int[] indices = computePi(input); 
+		int overlap = arrayMaxIndex(indices);
 
-		valid = false;
+		String whole = s1 + s2.substring(indices[overlap] + (indices.length - 1 - overlap)); 
+		
+		Strand both = new Strand();
+		
+		both.bases = whole; 
+		
+		both.end = b.end; 
+		both.start = a.start; 
+		both.id = a.id;
+		both.length = whole.length(); 
+		both.direction = a.direction; 
+		both.name = a.name;
+		both.transcriptId = a.transcriptId;
+		both.type = a.type; 
+		
+		return both; 
+	}
+	
+	/**
+	 * Puts two overalpping strands together
+	 * <pre> strands must be in order
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	public static FASTAFile concatenate(FASTAFile a, FASTAFile b)
+	{
+		String s1 = a.data;
+		String s2 = b.data; 
 
-		// Frame and range check - UI input
-		while (!valid) {
-			System.out.println("How many base pairs should the frame be?");
-			frame = sc.nextInt();
-
-			System.out.println("How many base pairs should it be shifted by?");
-			shift = sc.nextInt();
-
-			if (shift > 0 && frame > 0)
-				valid = true;
-			else
-				System.out.println("Shift and frame can't be 0");
+		String input = s2 + '$' + s1; 
+		
+		int[] indices = computePi(input); 
+		
+		//System.out.println(Arrays.toString(computePi(input)));
+		
+		int overlap = arrayMaxIndex(indices);
+		
+		String whole = s1 + s2.substring(indices[overlap] + (indices.length - 1 - overlap)); 
+		
+		
+		
+		FASTAFile both = new FASTAFile();
+		
+		both.data = whole;
+		both.length = whole.length();
+		both.name = a.name;
+		both.fosmid = a.fosmid;
+		both.number = b.number; 
+		
+		return both; 
+	}
+	
+	/**
+	 * Returns the index of the largest int in an int array
+	 * @param array
+	 * @return
+	 */
+	public static int arrayMaxIndex(int[] array)
+	{
+		if(array.length == 0)
+			return 0;
+		int max = 0;
+		for (int i = 0; i < array.length; i++) 
+		{
+			if(array[i] > array[max])
+				max = i;
 		}
-		valid = false;
+		
+		return max; 
+	}
+	
+	
+	//Taken from Professor Staley's 349 lecture
+	public static int[] computePi(String s)
+	{	
+		char[] pattern = s.toCharArray(); 
 
-		// Read Filename
+		// Figure pi using the standard KMP algorithm. Ignore 0-element of pi, 
+		// so that pi[x] is always "amount we can recover after matching x chars" 
+		int[] pi = new int[pattern.length+1];
+		int nextChr, pfxLen;
+		pfxLen = 0; // Prefix we've matched against ourselves so far
 
-		System.out.println("What GFF file would you like to analyze?");
-		filename = sc.next();
+		for (nextChr = 1; nextChr < pattern.length; nextChr++)
+		{
+			while (pattern[pfxLen] != pattern[nextChr] && pfxLen > 0)
+				pfxLen = pi[pfxLen];
 
-		PrintWriter csv = new PrintWriter(new FileWriter(filename.substring(0,
-				filename.lastIndexOf('.'))
-				+ ".csv"));
+			if (pattern[pfxLen] == pattern[nextChr]) 
+				pfxLen++;
 
-		csv.println("Start Codon,End Codon,GC Percentage");
+			pi[nextChr+1] = pfxLen;
+		}
+		return pi; 
+	}
+	
+	
+	public static void printGCtoCSV(int frame, int shift, String gffFile, String csvFile) throws IOException
+	{
+		int i = 0;
+		boolean valid = false; 
+		Scanner sc = new Scanner(System.in); 
 
-		Strand[] files = readStrandsFromGFF(filename);
+		PrintWriter csv;
+		csv = new PrintWriter(new FileWriter(csvFile));
 
+
+		csv.println("Start Codon,End Codon,GC Percentage"); 			
+
+		Strand[] files = readStrandsFromGFF(gffFile);
+		
 		i = 0;
-		for (Strand gene : files) {
+		for(Strand gene : files)
+		{
 			Strand[] frames;
 			i++;
-			System.out.println(gene.name + " " + gene.start + " " + gene.end);
-
+			//System.out.println(gene.name + " " + gene.start + " " + gene.end);
+			
 			String input = readFASTA(gene.name + ".txt", gene.start, gene.end);
 			gene.bases = input;
 			frames = gcPercentage(gene, frame, shift);
-
-			for (Strand section : frames) {
-				csv.printf("%d,%d,%.1f%%\n", gene.start + section.start,
-						gene.start + section.end, section.gcPercent);
-				System.out.printf("%d,%d,%.1f%%\n", gene.start + section.start,
-						gene.start + section.end, section.gcPercent);
+			
+			for(Strand section : frames)
+			{
+				csv.printf("%d,%d,%.1f%%\n", gene.start + section.start, gene.start + section.end, section.gcPercent);
+				
+				//System.out.printf("%d,%d,%.1f%%\n", gene.start + section.start, gene.start + section.end, section.gcPercent);
 			}
 			csv.println();
 		}
 		csv.close();
-
-		System.out.println("Done! File "
-				+ filename.substring(0, filename.lastIndexOf('.')) + ".csv"
-				+ " written.");
-		System.out.println("Done. Goodbye.");
+		
+		//System.out.println("Done! File " +filename.substring(0, filename.lastIndexOf('.')) + ".csv" + " written.");
+		//System.out.println("Done. Goodbye.");
 	}
-
+	
+	
 	/**
 	 * Returns the reverse complement of a strand of DNA
 	 */
-	public static String reverseComplement(String gene) {
+	public static String reverseComplement(String gene)
+	{
 		StringBuilder reverse = new StringBuilder();
-
-		for (int i = gene.length(); i > 0; --i) {
-			char result = gene.charAt(i - 1);
-
+		
+		for(int i = gene.length(); i > 0; --i)
+		{
+			char result = gene.charAt(i-1);
 			reverse.append(complement(result));
 		}
-
-		return reverse.toString();
+		return reverse.toString(); 
 	}
 
 	/**
 	 * Given a nucleotide as a char, returns its complement
-	 * 
-	 * @param nucleotide
-	 *            'A' 'C' 'G' or 'T'
+	 * @param nucleotide 'A' 'C' 'G' or 'T' 
 	 * @return 'A' 'C' 'G' or 'T'
 	 */
 	public static char complement(char nucleotide) {
@@ -251,42 +341,47 @@ public class DNALibrary {
 			single[0] = shorty;
 			return single;
 		}
-		// If the shift divides the frame evenly, we can speed things up
-		else if (frame % shift == 0) {
-			for (i = 0; i < slices.length && (i - 1) * shift < gene.length; i++) {
-				slices[i] = gcTotal(gene.bases.substring(i * shift, Math.min(
-						gene.length, (i + 1) * shift)));
+		//If the shift divides the frame evenly, we can speed things up
+		else if(frame % shift == 0)
+		{
+			for(i = 0; i < slices.length && (i - 1) * shift < gene.length; i++)
+			{
+				slices[i] = gcTotal(gene.bases.substring(i * shift, Math.min(gene.length, (i + 1) * shift)));
 			}
-			for (i = 0; (i - 1) * shift + frame < gene.length; i++) {
+			for(i = 0; (i - 1) * shift + frame < gene.length; i++)
+			{
 				Strand current = new Strand();
 				current.start = i * shift;
-				current.end = Math.min(gene.length, i * shift + frame);
+				current.end = Math.min(gene.length, i * shift + frame); 
 				current.length = current.end - current.start;
 				int numerator = 0;
-				for (j = i; j < frame / shift + i; j++) {
+				for(j = i; j < frame/shift + i; j++)
+				{
 					numerator += slices[j];
 				}
 
 				current.gcPercent = (numerator * 100.0 / current.length);
 				strands.add(i, current);
 			}
-		} else {
-			for (i = 0; i * shift + frame < gene.length; i++) {
+		}
+		else
+		{
+			for(i = 0; i * shift + frame < gene.length; i++)
+			{
 				Strand current = new Strand();
 				current.start = i * shift;
-				current.end = i * shift + frame;
+				current.end = i * shift + frame; 
 
-				current.gcPercent = gcCount(gene.bases.substring(current.start,
-						current.end));
+				current.gcPercent = gcCount(gene.bases.substring(current.start, current.end));
 				strands.add(i, current);
-
-				// last stubby frame
-				if ((i + 1) * shift + frame > gene.length) {
+				
+				//last stubby frame
+				if((i + 1) * shift + frame > gene.length)
+				{
 					current.start = i * shift;
 					current.end = gene.length;
 
-					current.gcPercent = gcCount(gene.bases.substring(
-							current.start, current.end));
+					current.gcPercent = gcCount(gene.bases.substring(current.start, current.end));
 					strands.add(i, current);
 
 				}
@@ -301,7 +396,7 @@ public class DNALibrary {
 	 * Returns a double between 0.0 and 100.0
 	 */
 	public static double gcCount(String dna) {
-		long total = 0;
+		long total= 0;
 
 		for (char c : dna.toCharArray()) {
 			if (c == 'C' || c == 'G')
@@ -525,9 +620,72 @@ public class DNALibrary {
 		return aa2codon;
 	}
 
-	/*
-	 * Convenience method for creating an error popup dialog
-	 */
+	//read all the files in a folder
+	public static FASTAFile concatFASTA(String folder) throws FileNotFoundException
+	{
+		int i;
+		File inFolder = new File(folder);
+		String filename[] = inFolder.list();
+		FASTAFile[] parts = new FASTAFile[filename.length]; 
+		FASTAFile master; 
+		
+		for (i = 0; i < filename.length; i++)
+		{
+			File current = new File(folder + "/" + filename[i]);
+			parts[i] = readFastaStrand(current);
+		}
+		
+		List<FASTAFile> sortMe = Arrays.asList(parts);
+		
+		Collections.sort(sortMe); 
+		
+		parts = sortMe.toArray(parts); 
+		
+		master = parts[0]; 
+		for(i = 1; i < filename.length; i++)
+		{
+			//concatenate FASTAFile[i] and FASTAFile[i + 1] 
+			master = concatenate(master, parts[i]);
+		}
+		
+		return master; 
+	}
+	
+	//read all the files in a folder
+	//TODO: add an array of offsets for each contig based on FASTA output
+	public static List<Strand> concatGFF(String folder) throws FileNotFoundException
+	{
+		int i;
+		List<Strand> parts = new ArrayList<Strand>(); 
+		File inFolder = null;
+		try
+		{
+			inFolder = new File(folder);
+		}
+		catch(Exception ex)
+		{
+			System.err.println("Folder " + folder + " not found.");
+			return null;
+		}
+		
+		String filename[] = inFolder.list();
+		
+		for (i = 0; i < filename.length; i++)
+		{	
+			List<Strand> newstrands =  Arrays.asList(readStrandsFromGFF(folder + '/' + filename[i]));
+			for(Strand s : newstrands)
+			{
+				if(s != null && !parts.contains(s))
+					parts.add(s);
+			}	
+		}
+		Collections.sort(parts);
+		return parts; 
+	}
+	
+	 /*
+      * Pops up an error Message
+      */
 	public static void popupError(String message) {
 		JOptionPane.showMessageDialog(null, message, "Error",
 				JOptionPane.ERROR_MESSAGE);
@@ -539,13 +697,92 @@ public class DNALibrary {
 	public static void popupMessage(String message) {
 		JOptionPane.showMessageDialog(null, message, "", JOptionPane.PLAIN_MESSAGE);
 	}
-
-	/*
-	 * Bean for holding information about a DAN strand
+	
+	/**
+	 * Takes a list of GFFs and outputs one big GFF file 
+	 * @param gffs
+	 * @param outputname the name of the file to write. Add the extension, this method doesn't. 
+	 * @throws IOException
 	 */
-	public static class Strand {
-		String bases;
-		// Name of the file this strand came from
+	public static void outputGFF(List<Strand> gffs, String outputname) throws IOException
+	{
+		PrintWriter out = new PrintWriter(new FileWriter(outputname));
+		for(Strand s : gffs)
+		{
+			out.printf("%s\t.\t%s\t%d\t%d\t.\t%c\t.\tgene_id \"%s\"; transcript_id \"%s\";\n",s.name,s.type,s.start,s.end,s.direction,s.id,s.transcriptId);
+		}
+		out.close();
+		
+	}
+	
+	//Outputs a fasta file with the name of the input
+	public static void outputFastaFile(FASTAFile input, String name) throws IOException
+	{
+		try{
+			PrintWriter fna = new PrintWriter(new FileWriter(name));
+			fna.printf(">%s range=%s:1-%d    \n", input.name, input.fosmid,input.length);
+			
+			for(int i = 0; i < input.length; i += 50)
+			{
+				fna.print("      ");
+				fna.println(input.data.substring(i, Math.min((i + 50), input.data.length())));
+			}
+			System.out.println("FASTA file " + name + " written");
+			fna.close();
+		}
+		catch(Exception ex)
+		{
+			ex.printStackTrace();
+			System.err.println("FASTA file " + name + " NOT written");
+		}
+	}
+	
+	public static FASTAFile readFastaStrand(File fasta) throws FileNotFoundException
+	{
+		FASTAFile out = new FASTAFile();
+		Scanner sc = new Scanner(fasta);
+		
+		out.name = sc.next().substring(1);
+		
+		String info  = sc.next();
+		out.fosmid = info.substring(info.indexOf('=') + 1, info.indexOf(':'));
+		out.number = Integer.parseInt(out.fosmid.substring("contig".length()));
+		out.length = Integer.parseInt(info.substring(info.indexOf('-')).trim());
+		
+
+		
+		while(sc.hasNext())
+		{
+			String temp = sc.next();
+			if (out.data != null)
+				out.data += temp;
+			else out.data = temp; 
+		}
+			
+		
+		return out; 
+	}
+	
+	//Representation of a FASTA file, basically a long string of bases
+	public static class FASTAFile implements Comparable<FASTAFile>
+	{
+		String name;
+		int number; 
+		String fosmid;
+		int length; 
+		String data;
+		
+		public int compareTo(FASTAFile arg0) {
+			return this.number - arg0.number; 
+		}
+		
+	}
+
+
+	public static class Strand implements Comparable<Strand>
+	{
+		String bases; 
+		//Name of the file this strand came from
 		String name;
 		// number of nucleotides long
 		int length;
@@ -603,28 +840,45 @@ public class DNALibrary {
 				// line
 				if (end - start > 50) {
 					fileContents.append(sc.nextLine().substring(start - i));
-				} else if (end - i < 50) {
-					fileContents.append(sc.nextLine().substring(start - i,
-							end - i));
-
+				}
+				else if(end - i < 50)
+				{
+					fileContents.append(sc.nextLine().substring(start - i, end  - i));
+					
 					return;
 				}
 				// Read the rest of the lines until the line before the end
 				else {
 					for (; i < end - 50; i += 50)
 						fileContents.append(sc.nextLine());
-
-					if (sc.hasNextLine())
-						fileContents
-								.append(sc.nextLine().substring(0, end - i));
+			
+					if(sc.hasNextLine())
+						fileContents.append(sc.nextLine().substring(0, end - i));
 				}
 				sc.close();
 			} catch (FileNotFoundException ex) {
 				popupError("There's something wrong with the way you typed "
 								+ filename + " or something bad happened");
 			}
-			this.bases = fileContents.toString();
+			this.bases = fileContents.toString(); 
+		}
+		public boolean equals(Object other)
+		{
+			if(other == null || other.getClass() != this.getClass())
+				return false;
+			
+			return (this.start == ((Strand)other).start
+					&& this.end == ((Strand)other).end
+					&& this.direction == ((Strand)other).direction
+					&& this.transcriptId.equals(((Strand)other).transcriptId));
+			
 		}
 
+		public int compareTo(Strand o) {
+			return Integer.parseInt(this.name.substring("contig".length())) 
+					- Integer.parseInt(o.name.substring("contig".length()));
+		}
+		
 	}
+	
 }
