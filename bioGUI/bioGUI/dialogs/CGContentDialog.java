@@ -224,7 +224,7 @@ public class CGContentDialog extends JDialog {
             		
                 	DNALibrary.calcGCContent(mFasta.getText(), start, end, size, shift);
 
-            	} catch (Exception ex) {
+            	} catch (NumberFormatException ex) {
             		DNALibrary.popupError("Bad Frame size or shift.");
             	}
             	

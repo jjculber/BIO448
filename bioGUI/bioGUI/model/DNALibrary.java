@@ -434,7 +434,7 @@ public class DNALibrary {
 
 		Strand[] exons = DNALibrary.readStrandsFromGFF(filename);
 
-		String path = gffFile.getParent() + "/";		
+		String path = gffFile.getParent() + File.separator;		
 				
 		String fastaFileName = path + exons[0].name + ".txt";
 		File fastaFile = new File(fastaFileName);
@@ -532,7 +532,7 @@ public class DNALibrary {
 			Strand[] frames = gcPercentage(gene, frameSize, frameShift);
 
 			File fastaFile = new File(fastaFilename);
-			String path = fastaFile.getParent();
+			String path = fastaFile.getParent() + File.separator;
 
 			String outFileName = path + fastaFile.getName() + "_GCContent.csv";
 			FileWriter outFile = new FileWriter(outFileName);
@@ -809,6 +809,7 @@ public class DNALibrary {
 			this.end = end;
 			this.direction = direction;
 			this.length = end - start;
+			this.bases = bases;
 
 			if (this.direction != '+' && this.direction != '-')
 				popupError("Strand made with odd direction " + direction);
