@@ -108,6 +108,8 @@ public class GffConcatenatorDialog extends JDialog {
 
          public void actionPerformed(ActionEvent e) {
             JFileChooser chooser = new JFileChooser();
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            
             int returnVal = chooser.showOpenDialog(chooser);
             
             if (returnVal == JFileChooser.CANCEL_OPTION) {
