@@ -672,7 +672,10 @@ public class DNALibrary {
 		
 		for (i = 0; i < filename.length; i++)
 		{	
-			List<Strand> newstrands =  Arrays.asList(readStrandsFromGFF(folder + '/' + filename[i]));
+			if (!filename[i].matches(".*\\.gff"))
+				break;
+			
+			List<Strand> newstrands =  Arrays.asList(readStrandsFromGFF(folder + File.separator + filename[i]));
 			for(Strand s : newstrands)
 			{
 				if(s != null && !parts.contains(s))
