@@ -24,8 +24,11 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.BoxLayout;
 
+import bioGUI.model.DNALibrary;
+
 
 import java.io.File;
+import java.io.IOException;
 
 public class GffConcatenatorDialog extends JDialog {
    /*
@@ -188,6 +191,13 @@ public class GffConcatenatorDialog extends JDialog {
             else
             {
               // TODO Codon bias work
+            	try {
+            		DNALibrary.popupMessage("This may take a little while.");
+					DNALibrary.concatChromosome(mDir.getText());
+				} catch (IOException e1) {
+					DNALibrary.popupError("File IO Exception.\n\n"+e1.getMessage());
+					e1.printStackTrace();
+				}
             }
             dispose();
          }
