@@ -184,7 +184,7 @@ public class DNALibrary {
 			i++;
 			//System.out.println(gene.name + " " + gene.start + " " + gene.end);
 			
-			String input = readFASTA(gene.name + ".txt", gene.start, gene.end);
+			String input = readFASTA(gene.name + ".fna", gene.start, gene.end);
 			gene.bases = input;
 			frames = gcPercentage(gene, frame, shift);
 			
@@ -462,7 +462,7 @@ public class DNALibrary {
 
 		String path = gffFile.getParent() + File.separator;		
 				
-		String fastaFileName = path + exons[0].name + ".txt";
+		String fastaFileName = path + exons[0].name + ".fna";
 		File fastaFile = new File(fastaFileName);
 
 		// SET UP INPUT FILE
@@ -728,8 +728,8 @@ public class DNALibrary {
 			
 		}
 		Collections.sort(allStrands); 
-		outputGFF(allStrands, folder + "master.gff");
-		outputFastaFile(master, folder + "master.fna"); 
+		outputGFF(allStrands, folder + File.separator + "master.gff");
+		outputFastaFile(master, folder + File.separator + "master.fna"); 
 		popupMessage("Files saved in " + folder + " as master.gff and master.fna");
 	}
 
@@ -836,7 +836,7 @@ public class DNALibrary {
 	{
 		try{
 			PrintWriter fna = new PrintWriter(new FileWriter(name));
-			fna.printf(">%s range=%s:1-%d    \n", input.name, input.fosmid,input.length);
+			fna.printf(">%s range=%s:1-%d    \n", "master.fna", input.fosmid,input.length);
 			
 			for(int i = 0; i < input.length; i += 50)
 			{
