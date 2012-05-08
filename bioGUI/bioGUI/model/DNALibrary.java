@@ -78,9 +78,9 @@ public class DNALibrary {
 	/**
 	 * Puts two overalpping strands together
 	 * <pre> strands must be in order
-	 * @param s1
-	 * @param s2
-	 * @return
+	 * @param s1 The first FASTA strand
+	 * @param s2 The second FASTA strand
+	 * @return A new FASTA 
 	 */
 	public static FASTAFile concatenate(FASTAFile a, FASTAFile b)
 	{
@@ -996,11 +996,14 @@ public class DNALibrary {
 			
 		}
 
+
 		public int compareTo(Strand o) {
-			return Integer.parseInt(this.name.substring("contig".length())) 
+			int number = Integer.parseInt(this.name.substring("contig".length())) 
 					- Integer.parseInt(o.name.substring("contig".length()));
+			if(number ==0)
+				return this.start - o.start;
+			return number; 
 		}
-		
 	}
 	
 }
