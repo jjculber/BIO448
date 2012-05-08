@@ -681,7 +681,7 @@ public class DNALibrary {
 			}
 			else
 			{
-				popupError("Filetype not recognized:" + files[i]+ "\n\nTo process, rename as a .gff or .fna");
+				popupError("Filetype not recognized:" + files[i]+ "\n\nTo process, rename as a .gff or .fna\n(continueing anyways)");
 			}
 		}
 		Collections.sort(fastas); 
@@ -825,7 +825,7 @@ public class DNALibrary {
 		PrintWriter out = new PrintWriter(new FileWriter(outputname));
 		for(Strand s : gffs)
 		{
-			out.printf("%s\t.\t%s\t%d\t%d\t.\t%c\t.\tgene_id \"%s\"; transcript_id \"%s\";\n",s.name,s.type,s.start,s.end,s.direction,s.id,s.transcriptId);
+			out.printf("%s\t.\t%s\t%d\t%d\t.\t%c\t.\tgene_id \"%s\"; transcript_id \"%s\";\n","master",s.type,s.start,s.end,s.direction,s.id,s.transcriptId);
 		}
 		out.close();
 		System.out.println("GFF file " + outputname + " written");
@@ -994,11 +994,11 @@ public class DNALibrary {
 
 
 		public int compareTo(Strand o) {
-			int number = Integer.parseInt(this.name.substring("contig".length())) 
-					- Integer.parseInt(o.name.substring("contig".length()));
-			if(number ==0)
+//			int number = Integer.parseInt(this.name.substring("contig".length())) 
+//					- Integer.parseInt(o.name.substring("contig".length()));
+//			if(number ==0)
 				return this.start - o.start;
-			return number; 
+//			return number; 
 		}
 	}
 	
