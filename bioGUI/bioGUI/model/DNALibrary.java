@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
-import javax.swing.event.ListSelectionEvent;
 
 public class DNALibrary {
 	public static File inputFile;
@@ -169,8 +168,6 @@ public class DNALibrary {
 	public static void printGCtoCSV(int frame, int shift, String gffFile, String csvFile) throws IOException
 	{
 		int i = 0;
-		boolean valid = false; 
-		Scanner sc = new Scanner(System.in); 
 
 		PrintWriter csv;
 		csv = new PrintWriter(new FileWriter(csvFile));
@@ -662,7 +659,6 @@ public class DNALibrary {
 		String[] files = inFolder.list();
 		ArrayList<FASTAFile> fastas = new ArrayList<FASTAFile>();
 		ArrayList<Strand[]> gffs = new ArrayList<Strand[]>();  
-		List<Strand> strands = new ArrayList<Strand>(); 
 		List<Strand> allStrands = new ArrayList<Strand>(); 
 		
 		FASTAFile master; 
@@ -674,19 +670,18 @@ public class DNALibrary {
 			if(files[i].matches(".*\\.gff"))
 			{
 				System.out.println(files[i] + " read as GFF");
-				Strand current[] = readStrandsFromGFF(folder + "/" + files[i]);
+				Strand current[] = readStrandsFromGFF(folder + File.separator + files[i]);
 				gffs.add(current); 
 			}
 			else if(files[i].matches(".*\\.fna"))
 			{
 				System.out.println(files[i] + " read as FASTA");
-				FASTAFile current = readFastaStrand(new File(folder + "/" + files[i]));
+				FASTAFile current = readFastaStrand(new File(folder + File.separator + files[i]));
 				fastas.add(current); 
 			}
 			else
 			{
-				System.err.println("Filetype not recognized:" + files[i]);
-				System.err.println("To process, rename as a .gff or .fna");
+				popupError("Filetype not recognized:" + files[i]+ "\n\nTo process, rename as a .gff or .fna");
 			}
 		}
 		Collections.sort(fastas); 
@@ -735,6 +730,7 @@ public class DNALibrary {
 		Collections.sort(allStrands); 
 		outputGFF(allStrands, folder + "master.gff");
 		outputFastaFile(master, folder + "master.fna"); 
+		popupMessage("Files saved in " + folder + " as master.gff and master.fna");
 	}
 
 	//read all the files in a folder
