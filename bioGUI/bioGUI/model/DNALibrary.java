@@ -18,10 +18,26 @@ import java.util.Map;
 import java.util.Scanner;
 
 import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
 
 public class DNALibrary {
 	public static File inputFile;
 
+	public static void main(String[] args) throws IOException
+	{
+		System.out.println("MASTER CONCATENATOR");
+		
+		System.out.println("WHAT FOLDER WOULD YOU LIKE, BROTHER?");
+		
+		Scanner sc = new Scanner(System.in);
+		
+		String file = sc.next();
+		
+		concatChromosome(file); 
+	
+	}
+	
+	
 	/**
 	 * Puts two overalpping strands together
 	 * <pre> strands must be in order
@@ -46,13 +62,15 @@ public class DNALibrary {
 		both.bases = whole; 
 		
 		both.end = b.end; 
-		both.start = a.start; 
+		both.start = indices[overlap] + (indices.length - 1 - overlap); 
+		System.out.println("offset: " + both.start);
 		both.id = a.id;
 		both.length = whole.length(); 
 		both.direction = a.direction; 
 		both.name = a.name;
 		both.transcriptId = a.transcriptId;
 		both.type = a.type; 
+		
 		
 		return both; 
 	}
@@ -76,15 +94,17 @@ public class DNALibrary {
 		//System.out.println(Arrays.toString(computePi(input)));
 		
 		int overlap = arrayMaxIndex(indices);
-		
-		String whole = s1 + s2.substring(indices[overlap] + (indices.length - 1 - overlap)); 
+		int offset = indices[overlap] + (indices.length - 1 - overlap);
+		String whole = s1 + s2.substring(offset); 
 		
 		
 		
 		FASTAFile both = new FASTAFile();
 		
 		both.data = whole;
-		both.length = whole.length();
+
+		both.offset = a.length - offset; 
+		both.length = whole.length();;
 		both.name = a.name;
 		both.fosmid = a.fosmid;
 		both.number = b.number; 
@@ -619,6 +639,94 @@ public class DNALibrary {
 		aa2codon.put("STOP", new String[]{"TAA", "TAG", "TGA"});
 		return aa2codon;
 	}
+	
+	/**
+	 * Concatenate gffs and fastas in a folder
+	 * Outputs a new FASTA file and GFF file (master files)
+	 * Replaces concatFASTA and concatGFF
+	 * @throws IOException 
+	 */
+	public static void concatChromosome(String folder) throws IOException
+	{
+		int i;
+		File inFolder = new File(folder);
+		String[] files = inFolder.list();
+		ArrayList<FASTAFile> fastas = new ArrayList<FASTAFile>();
+		ArrayList<Strand[]> gffs = new ArrayList<Strand[]>();  
+		List<Strand> strands = new ArrayList<Strand>(); 
+		List<Strand> allStrands = new ArrayList<Strand>(); 
+		
+		FASTAFile master; 
+		
+		//Read all files and parse GFFS and FASTAS, begin constructing offset array
+		for (i = 0; i < files.length; i++) 
+		{
+			//Change these to backslashes for Windows
+			if(files[i].matches(".*\\.gff"))
+			{
+				System.out.println(files[i] + " read as GFF");
+				Strand current[] = readStrandsFromGFF(folder + "/" + files[i]);
+				gffs.add(current); 
+			}
+			else if(files[i].matches(".*\\.fna"))
+			{
+				System.out.println(files[i] + " read as FASTA");
+				FASTAFile current = readFastaStrand(new File(folder + "/" + files[i]));
+				fastas.add(current); 
+			}
+			else
+			{
+				System.err.println("Filetype not recognized:" + files[i]);
+				System.err.println("To process, rename as a .gff or .fna");
+			}
+		}
+		Collections.sort(fastas); 
+		
+		int[] offsets = new int[fastas.size()];
+		master = fastas.get(0); 
+		offsets[0] = master.length;
+		for(i = 1; i < fastas.size(); i++)
+		{
+			//concatenate master and FASTAFile[i] 
+			master = concatenate(master, fastas.get(i));
+			offsets[i] = master.offset;
+		}
+		
+		for(Strand[] current : gffs)
+		{
+			Strand[] buffer = current; 
+			int offset = 0; 
+			
+			//Find the matching FASTA to get the offset
+			//Matching is based on name, i.e. "fosmid21" == "fosmid21"
+			for(i = 0; i < fastas.size(); i++)
+			{
+				//found a match
+				if(fastas.get(i).fosmid.equals(buffer[0].name))
+				{
+					System.out.println(buffer[0].name + " matched");
+					
+					//calculate gff gene offset
+					
+					if(i > 0)
+						offset = offsets[i - 1]; 
+					
+					System.out.println(i + " offset " + offset);
+					
+					for(Strand s : buffer)
+					{
+						s.start += offset;
+						s.end += offset; 
+					}
+					allStrands.addAll(Arrays.asList(buffer)); 
+				}
+			}
+			
+		}
+		Collections.sort(allStrands); 
+		outputGFF(allStrands, folder + "master.gff");
+		outputFastaFile(master, folder + "master.fna"); 
+	}
 
 	//read all the files in a folder
 	public static FASTAFile concatFASTA(String folder) throws FileNotFoundException
@@ -715,7 +823,7 @@ public class DNALibrary {
 			out.printf("%s\t.\t%s\t%d\t%d\t.\t%c\t.\tgene_id \"%s\"; transcript_id \"%s\";\n",s.name,s.type,s.start,s.end,s.direction,s.id,s.transcriptId);
 		}
 		out.close();
-		
+		System.out.println("GFF file " + outputname + " written");
 	}
 	
 	//Outputs a fasta file with the name of the input
@@ -750,7 +858,7 @@ public class DNALibrary {
 		String info  = sc.next();
 		out.fosmid = info.substring(info.indexOf('=') + 1, info.indexOf(':'));
 		out.number = Integer.parseInt(out.fosmid.substring("contig".length()));
-		out.length = Integer.parseInt(info.substring(info.indexOf('-')).trim());
+		out.length = Integer.parseInt(info.substring(info.indexOf('-') + 1).trim());
 		
 
 		
@@ -774,6 +882,7 @@ public class DNALibrary {
 		String fosmid;
 		int length; 
 		String data;
+		int offset; 
 		
 		public int compareTo(FASTAFile arg0) {
 			return this.number - arg0.number; 
