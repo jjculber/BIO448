@@ -94,9 +94,18 @@ public class DNALibrary {
 		//System.out.println(Arrays.toString(computePi(input)));
 		
 		int overlap = arrayMaxIndex(indices);
-		int offset = indices[overlap] + (indices.length - 1 - overlap);
-		String whole = s1 + s2.substring(offset); 
+		String whole = s1 + s2; 
 		
+		int offset = indices[overlap] + (indices.length - 1 - overlap);
+		
+		try {
+			whole = s1 + s2.substring(offset); 
+		}
+		catch(StringIndexOutOfBoundsException ex)
+		{
+			offset = 0;
+			System.err.println("Strings "+ a.fosmid + " and " + b.fosmid + " couldn't be matched - just adding it to the end");
+		}
 		
 		
 		FASTAFile both = new FASTAFile();
@@ -104,9 +113,9 @@ public class DNALibrary {
 		both.data = whole;
 
 		both.offset = a.length - offset; 
-		both.length = whole.length();;
+		both.length = whole.length();
 		both.name = a.name;
-		both.fosmid = a.fosmid;
+		both.fosmid = b.fosmid;
 		both.number = b.number; 
 		
 		return both; 
