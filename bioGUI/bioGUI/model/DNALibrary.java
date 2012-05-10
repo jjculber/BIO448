@@ -23,6 +23,7 @@ import java.lang.StringBuilder;
 import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -86,6 +87,131 @@ public class DNALibrary {
 		return reverse.toString();
 	}
 
+	/**
+	 * optimalFrequency
+	 * Calculates the frequency of optimal codons
+	 */
+	public static double optimalFrequency(String dna, List<String> optimalCodons)
+	{
+		List<String> Xex = getExcludedCodons();
+		List<String> codons = getAllCodons();
+		
+		List<String> Xnon = codons;
+		Xnon.removeAll(optimalCodons);
+		
+		int optimal = 0; 
+		int nonoptimal = 0;
+		
+		for (int i = 3; i < dna.length(); i+= 3) 
+		{
+			String current = dna.substring(i - 3, i);
+			if(optimalCodons.contains(current))
+				optimal++;
+			else if (Xnon.contains(current))
+				nonoptimal++;
+		}
+		
+		return (optimal / (nonoptimal + optimal));
+	}
+	
+	/**
+	 * 
+	 * Relative Synonymous Codon Usage
+	 * @param dna DNA sequence
+	 * @param codon The codon to compute the RCSU of
+	 * @param acidCodons All of the codons that code for this amino acid
+	 * @return
+	 */
+	public static double RCSU(String dna, String codon, List<String> acidCodons)
+	{
+		int Xi = 0, sum = 0;
+		int[] Xj = new int[acidCodons.size()];
+		Arrays.fill(Xj, 0);
+		
+		for (int i = 3; i < dna.length(); i+= 3) 
+		{
+			String current = dna.substring(i - 3, i);
+			if(current.equals(codon))
+				Xi++;
+			else if (acidCodons.contains(current))
+				Xj[acidCodons.indexOf(current)]++;
+		}
+		
+		for (int i = 0; i < Xj.length; i++) {
+			sum += Xj[i];
+		}
+		
+		return (Xi /((1/acidCodons.size()) * sum));
+	}
+	
+	/**
+	 * Codon Adaptation Index
+	 * @return
+	 */
+	public static double codonAdaptationIndex(String dna)
+	{
+		List<String> codons = getAllCodons();
+		codons.removeAll(getExcludedCodons());
+		
+		Collection<String[]> aminoCodons = initAA().values();
+
+		double[] rcsus = new double[codons.size()];
+		
+		for (int i = 0; i < codons.size(); i++) 
+		{
+			for(String[] s : aminoCodons)
+			{
+				if(Arrays.asList(s).contains(codons.get(i)))
+				{
+					rcsus[i] = RCSU(dna, codons.get(i), Arrays.asList(s)); 
+				}
+			}
+		}
+
+		double rcsuMax = rcsus[arrayMaxIndex(rcsus)];
+		
+		double sum = 0;
+		
+		for (int i = 0; i < rcsus.length; i++) {
+			sum += Math.log(rcsus[i]/rcsuMax); 
+		}
+		
+		return Math.exp((1 / rcsus.length) * sum); 
+		
+		
+	}
+	
+	public static List<String> getAllCodons()
+	{
+		String[] acids =  {
+				"TTT",  "TTC",  "TTA",  "TTG",  "TCT",  "TCC",  "TCA",  "TCG",  
+				"TAT",  "TAC",  "TGT",  "TGC",  "TGG",  "CTT",  "CTC",  "CTA",  
+				"CTG",  "CCT",  "CCC",  "CCA",  "CCG",  "CAT",  "CAC",  "CAA",  
+				"CAG",  "CGT",  "CGC",  "CGA",  "CGG",  "ATT",  "ATC",  "ATA",  
+				"ATG",  "ACT",  "ACC",  "ACA",  "ACG",  "AAT",  "AAC",  "AAA",  
+				"AAG",  "AGT",  "AGC",  "AGA",  "AGG",  "GTT",  "GTC",  "GTA",  
+				"GTG",  "GCT",  "GCC",  "GCA",  "GCG",  "GAT",  "GAC",  "GAA",  
+				"GAG",  "GGT",  "GGC",  "GGA",  "GGG"};
+		
+		return Arrays.asList(acids); 
+	}
+	
+	
+	public static List<String> getExcludedCodons()
+	{
+		List<String> Xex = new ArrayList<String>();
+		//Stop codons
+		Xex.add("TAG");
+		Xex.add("TGA");
+		Xex.add("TAA");
+		//Methionine
+		Xex.add("ATG");
+		//Tryptophan
+		Xex.add("TGG");
+		
+		return Xex;
+	}
+	
 	/**
 	 * calcGCContent
 	 * Provides an interface to calculate the GC content of a FASTA file
@@ -680,6 +806,24 @@ public class DNALibrary {
 
 		return max;
 	}
+	
+	/**
+	 * Returns the index of the largest int in an int array
+	 * 
+	 * @param array
+	 * @return
+	 */
+	public static int arrayMaxIndex(double[] array) {
+		if (array.length == 0)
+			return 0;
+		int max = 0;
+		for (int i = 0; i < array.length; i++) {
+			if (array[i] > array[max])
+				max = i;
+		}
+
+		return max;
+	}
 
 	// Taken from Professor Staley's 349 lecture
 	public static int[] computePi(String s) {
@@ -940,6 +1084,7 @@ public class DNALibrary {
 		}
 
 	}
+	
 	/**
 	 * Class representation of a strand of DNA
 	 * @author johntbiddle
