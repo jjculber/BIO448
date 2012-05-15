@@ -3,6 +3,8 @@ package bioGUI;
 import bioGUI.dialogs.CGContentDialog;
 import bioGUI.dialogs.CodonBiasDialog;
 import bioGUI.dialogs.GffConcatenatorDialog;
+import bioGUI.dialogs.PalindromeDialog;
+import bioGUI.dialogs.RepeatDialog;
 
 import java.awt.event.ActionListener;
 
@@ -107,12 +109,34 @@ public class MainWindow extends JFrame {
             gffConcatenatorDialog.setVisible(true);
          }
       });
+
+      JMenuItem repeats = new JMenuItem("Find Repeats");
+      repeats.addActionListener(new ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent e) {
+        	 RepeatDialog repeatDialog = new RepeatDialog(mMainFrame, "Find Repeats");
+
+        	 repeatDialog.init();
+        	 repeatDialog.setVisible(true);
+         }
+      });
+
+      JMenuItem palindromes = new JMenuItem("Find Palindromes");
+      palindromes.addActionListener(new ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent e) {
+        	 PalindromeDialog palindromeDialog = new PalindromeDialog(mMainFrame, "Find Palindromes");
+
+        	 palindromeDialog.init();
+        	 palindromeDialog.setVisible(true);
+         }
+      });
       
       
       JMenu analysisMenu = new JMenu("Analysis");
       analysisMenu.add(gcContent);
       analysisMenu.add(condonBias);
       analysisMenu.add(gffConcatenator);
+      analysisMenu.add(repeats);
+      analysisMenu.add(palindromes);
 
       return analysisMenu;
    }
