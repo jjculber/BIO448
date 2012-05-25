@@ -8,6 +8,8 @@ import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileReader;
+import java.io.StringReader;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -22,6 +24,10 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+
+import neobio.alignment.NeedlemanWunsch;
+import neobio.alignment.PairwiseAlignment;
+import neobio.alignment.ScoringMatrix;
 
 import bioGUI.model.DNALibrary;
 
@@ -201,9 +207,30 @@ public class SimilarityDialog extends JDialog {
 					return;
 				} else {
 
-					// TODO call repeat code
+					// TODO call similarity code
+					try {
+					ScoringMatrix score = new ScoringMatrix(new FileReader("blosum62.txt"));
+					
+					score.deletionCost = -3; // TODO change to user input later
+					
+					String a = mDNA1.getText();
+					String b = mDNA2.getText(); 
+					
+					final NeedlemanWunsch algorithm = new NeedlemanWunsch(); 
+					
+					algorithm.loadSequences(new StringReader(a), new StringReader(b)); 
+					
+					algorithm.setScoringScheme(score);
+					
+					PairwiseAlignment alignment = algorithm.getPairwiseAlignment();
+					String results = alignment.getGappedSequence1()+"\n"+alignment.getGappedSequence2();
+					
+							
+					mResults.setText(""+results);
 
-					mResults.setText(mDNA1.getText() + " " + mDNA2.getText());
+					} catch (Exception ex) {
+						DNALibrary.popupError(ex.getMessage());
+					}
 				}
 //				dispose();
 			}
