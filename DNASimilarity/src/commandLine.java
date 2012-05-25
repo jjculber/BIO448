@@ -47,19 +47,22 @@ public class commandLine extends DNALibrary{
 		return alignment.getScore();		
 	}
 	
-	public static void printGappedSequence(String a, String b)
+	public static String printGappedSequence(String a, String b)
 	{
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(a + "\n");
 		System.out.println(a);
 		for(int i = 0; i < Math.min(a.length(), b.length()); i++)
 		{
 			if(a.charAt(i) == b.charAt(i))
 			{
-				System.out.print("|");
+				buffer.append("|");
 			}
-			else System.out.print(" ");
+			else buffer.append(" ");
 		}
-		System.out.println("");
-		System.out.println(b);
+		buffer.append("\n");
+		buffer.append(b + "\n");
+		return buffer.toString();
 	}
 	
 	/**
