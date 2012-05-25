@@ -1,4 +1,5 @@
 package bioGUI.model;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -10,7 +11,7 @@ import bioGUI.model.DNALibrary;
 
 import neobio.alignment.*;
 
-public class commandLine extends DNALibrary{
+public class Similarity extends DNALibrary{
 
 	public static ScoringMatrix score;
 	
@@ -42,10 +43,47 @@ public class commandLine extends DNALibrary{
 		algorithm.setScoringScheme(score);
 		
 		PairwiseAlignment alignment = algorithm.getPairwiseAlignment();
-		System.out.println(alignment.getGappedSequence1());
-		System.out.println(alignment.getGappedSequence2());
+		
+		System.out.println(getGappedSequence(alignment.getGappedSequence1(), alignment.getGappedSequence2()));
 		
 		return alignment.getScore();		
+	}
+	
+	public static String computeGlobalAlignment(String a, String b) throws IOException, InvalidSequenceException, IncompatibleScoringSchemeException
+	{
+		final NeedlemanWunsch algorithm = new NeedlemanWunsch(); 
+		
+		algorithm.loadSequences(new StringReader(a), new StringReader(b)); 
+		
+		try {
+			score = new ScoringMatrix(new FileReader("blosum62.txt"));
+		} catch (InvalidScoringMatrixException e) {
+			popupError(e.getMessage());
+		}
+		
+		algorithm.setScoringScheme(score);
+		
+		PairwiseAlignment alignment = algorithm.getPairwiseAlignment();
+		
+		return getGappedSequence(alignment.getGappedSequence1(), alignment.getGappedSequence2());
+		
+	}
+	
+	public static String getGappedSequence(String a, String b)
+	{
+		StringBuffer buffer = new StringBuffer();
+		buffer.append(a + "\n");
+		for(int i = 0; i < Math.min(a.length(), b.length()); i++)
+		{
+			if(a.charAt(i) == b.charAt(i))
+			{
+				buffer.append("|");
+			}
+			else buffer.append(" ");
+		}
+		buffer.append("\n");
+		buffer.append(b + "\n");
+		return buffer.toString();
 	}
 	
 	/**

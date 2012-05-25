@@ -4,17 +4,15 @@ import java.awt.Component;
 import java.awt.ComponentOrientation;
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileReader;
-import java.io.StringReader;
 
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -25,11 +23,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import neobio.alignment.NeedlemanWunsch;
-import neobio.alignment.PairwiseAlignment;
 import neobio.alignment.ScoringMatrix;
-
 import bioGUI.model.DNALibrary;
+import bioGUI.model.Similarity;
 
 public class SimilarityDialog extends JDialog {
 	/*
@@ -66,9 +62,11 @@ public class SimilarityDialog extends JDialog {
 		mDNA2 = new JTextArea(100, 100);
 		mResults = new JTextArea(100, 100);
 		mResults.setEnabled(false);
-		mResults.setLineWrap(true);
+		mResults.setLineWrap(false);
 		mDNA1.setLineWrap(true);
 		mDNA2.setLineWrap(true);
+		Font mono = new Font(Font.MONOSPACED, Font.PLAIN, 12);
+		mResults.setFont(mono);
 
 		mDNA1Scroll = new JScrollPane(mDNA1, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		mDNA2Scroll = new JScrollPane(mDNA2, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -216,17 +214,9 @@ public class SimilarityDialog extends JDialog {
 					String a = mDNA1.getText();
 					String b = mDNA2.getText(); 
 					
-					final NeedlemanWunsch algorithm = new NeedlemanWunsch(); 
-					
-					algorithm.loadSequences(new StringReader(a), new StringReader(b)); 
-					
-					algorithm.setScoringScheme(score);
-					
-					PairwiseAlignment alignment = algorithm.getPairwiseAlignment();
-					String results = alignment.getGappedSequence1()+"\n"+alignment.getGappedSequence2();
-					
+					String results = Similarity.computeGlobalAlignment(a, b);
 							
-					mResults.setText(""+results);
+					mResults.setText(results);
 
 					} catch (Exception ex) {
 						DNALibrary.popupError(ex.getMessage());
@@ -256,4 +246,5 @@ public class SimilarityDialog extends JDialog {
 
 		return cancelButton;
 	}
+	
 }
