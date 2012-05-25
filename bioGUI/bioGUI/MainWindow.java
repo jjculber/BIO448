@@ -5,6 +5,7 @@ import bioGUI.dialogs.CodonBiasDialog;
 import bioGUI.dialogs.GffConcatenatorDialog;
 import bioGUI.dialogs.PalindromeDialog;
 import bioGUI.dialogs.RepeatDialog;
+import bioGUI.dialogs.SimilarityDialog;
 
 import java.awt.event.ActionListener;
 
@@ -129,6 +130,16 @@ public class MainWindow extends JFrame {
         	 palindromeDialog.setVisible(true);
          }
       });
+
+      JMenuItem similarity = new JMenuItem("DNA Similarity");
+      similarity.addActionListener(new ActionListener() {
+         public void actionPerformed(java.awt.event.ActionEvent e) {
+        	 SimilarityDialog similarityDialog = new SimilarityDialog(mMainFrame, "DNA Similarity");
+
+        	 similarityDialog.init();
+        	 similarityDialog.setVisible(true);
+         }
+      });
       
       
       JMenu analysisMenu = new JMenu("Analysis");
@@ -137,6 +148,7 @@ public class MainWindow extends JFrame {
       analysisMenu.add(gffConcatenator);
       analysisMenu.add(repeats);
       analysisMenu.add(palindromes);
+      analysisMenu.add(similarity);
 
       return analysisMenu;
    }
