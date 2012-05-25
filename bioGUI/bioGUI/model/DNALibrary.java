@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
@@ -35,7 +36,9 @@ import javax.swing.event.ListSelectionEvent;
 
 public class DNALibrary {
 	public static File inputFile;
-
+	//yes, this is a global variable.
+	public static ArrayList<String> errors;
+	
 	public static void main(String[] args) throws IOException {
 		System.out.println("MASTER CONCATENATOR");
 
@@ -47,8 +50,8 @@ public class DNALibrary {
 
 		concatChromosome(file);
 
+		
 	}
-	
 
 	/**
 	 * Given a nucleotide as a char, returns its complement
@@ -88,141 +91,136 @@ public class DNALibrary {
 	}
 
 	/**
-	 * optimalFrequency
-	 * Calculates the frequency of optimal codons
+	 * optimalFrequency Calculates the frequency of optimal codons
 	 */
-	public static double optimalFrequency(String dna, List<String> optimalCodons)
-	{
+	public static double optimalFrequency(String dna, List<String> optimalCodons) {
 		List<String> Xex = getExcludedCodons();
 		List<String> codons = getAllCodons();
-		
+
 		List<String> Xnon = codons;
 		Xnon.removeAll(optimalCodons);
-		
-		int optimal = 0; 
+
+		int optimal = 0;
 		int nonoptimal = 0;
-		
-		for (int i = 3; i < dna.length(); i+= 3) 
-		{
+
+		for (int i = 3; i < dna.length(); i += 3) {
 			String current = dna.substring(i - 3, i);
-			if(optimalCodons.contains(current))
+			if (optimalCodons.contains(current))
 				optimal++;
 			else if (Xnon.contains(current))
 				nonoptimal++;
 		}
-		
+
 		return (optimal / (nonoptimal + optimal));
 	}
-	
+
 	/**
 	 * 
 	 * Relative Synonymous Codon Usage
-	 * @param dna DNA sequence
-	 * @param codon The codon to compute the RCSU of
-	 * @param acidCodons All of the codons that code for this amino acid
+	 * 
+	 * @param dna
+	 *            DNA sequence
+	 * @param codon
+	 *            The codon to compute the RCSU of
+	 * @param acidCodons
+	 *            All of the codons that code for this amino acid
 	 * @return
 	 */
-	public static double RCSU(String dna, String codon, List<String> acidCodons)
-	{
+	public static double RCSU(String dna, String codon, List<String> acidCodons) {
 		int Xi = 0, sum = 0;
 		int[] Xj = new int[acidCodons.size()];
 		Arrays.fill(Xj, 0);
-		
-		for (int i = 3; i < dna.length(); i+= 3) 
-		{
+
+		for (int i = 3; i < dna.length(); i += 3) {
 			String current = dna.substring(i - 3, i);
-			if(current.equals(codon))
+			if (current.equals(codon))
 				Xi++;
 			else if (acidCodons.contains(current))
 				Xj[acidCodons.indexOf(current)]++;
 		}
-		
+
 		for (int i = 0; i < Xj.length; i++) {
 			sum += Xj[i];
 		}
-		
-		return (Xi /((1/acidCodons.size()) * sum));
+
+		return (Xi / ((1 / acidCodons.size()) * sum));
 	}
-	
+
 	/**
 	 * Codon Adaptation Index
+	 * 
 	 * @return
 	 */
-	public static double codonAdaptationIndex(String dna)
-	{
+	public static double codonAdaptationIndex(String dna) {
 		List<String> codons = getAllCodons();
 		codons.removeAll(getExcludedCodons());
-		
+
 		Collection<String[]> aminoCodons = initAA().values();
 
 		double[] rcsus = new double[codons.size()];
-		
-		for (int i = 0; i < codons.size(); i++) 
-		{
-			for(String[] s : aminoCodons)
-			{
-				if(Arrays.asList(s).contains(codons.get(i)))
-				{
-					rcsus[i] = RCSU(dna, codons.get(i), Arrays.asList(s)); 
+
+		for (int i = 0; i < codons.size(); i++) {
+			for (String[] s : aminoCodons) {
+				if (Arrays.asList(s).contains(codons.get(i))) {
+					rcsus[i] = RCSU(dna, codons.get(i), Arrays.asList(s));
 				}
 			}
 		}
 
 		double rcsuMax = rcsus[arrayMaxIndex(rcsus)];
-		
+
 		double sum = 0;
-		
+
 		for (int i = 0; i < rcsus.length; i++) {
-			sum += Math.log(rcsus[i]/rcsuMax); 
+			sum += Math.log(rcsus[i] / rcsuMax);
 		}
-		
-		return Math.exp((1 / rcsus.length) * sum); 
-		
-		
+
+		return Math.exp((1 / rcsus.length) * sum);
+
 	}
-	
-	public static List<String> getAllCodons()
-	{
-		String[] acids =  {
-				"TTT",  "TTC",  "TTA",  "TTG",  "TCT",  "TCC",  "TCA",  "TCG",  
-				"TAT",  "TAC",  "TGT",  "TGC",  "TGG",  "CTT",  "CTC",  "CTA",  
-				"CTG",  "CCT",  "CCC",  "CCA",  "CCG",  "CAT",  "CAC",  "CAA",  
-				"CAG",  "CGT",  "CGC",  "CGA",  "CGG",  "ATT",  "ATC",  "ATA",  
-				"ATG",  "ACT",  "ACC",  "ACA",  "ACG",  "AAT",  "AAC",  "AAA",  
-				"AAG",  "AGT",  "AGC",  "AGA",  "AGG",  "GTT",  "GTC",  "GTA",  
-				"GTG",  "GCT",  "GCC",  "GCA",  "GCG",  "GAT",  "GAC",  "GAA",  
-				"GAG",  "GGT",  "GGC",  "GGA",  "GGG"};
-		
-		return Arrays.asList(acids); 
+
+	public static List<String> getAllCodons() {
+		String[] acids = { "TTT", "TTC", "TTA", "TTG", "TCT", "TCC", "TCA",
+				"TCG", "TAT", "TAC", "TGT", "TGC", "TGG", "CTT", "CTC", "CTA",
+				"CTG", "CCT", "CCC", "CCA", "CCG", "CAT", "CAC", "CAA", "CAG",
+				"CGT", "CGC", "CGA", "CGG", "ATT", "ATC", "ATA", "ATG", "ACT",
+				"ACC", "ACA", "ACG", "AAT", "AAC", "AAA", "AAG", "AGT", "AGC",
+				"AGA", "AGG", "GTT", "GTC", "GTA", "GTG", "GCT", "GCC", "GCA",
+				"GCG", "GAT", "GAC", "GAA", "GAG", "GGT", "GGC", "GGA", "GGG" };
+
+		return Arrays.asList(acids);
 	}
-	
-	
-	public static List<String> getExcludedCodons()
-	{
+
+	public static List<String> getExcludedCodons() {
 		List<String> Xex = new ArrayList<String>();
-		//Stop codons
+		// Stop codons
 		Xex.add("TAG");
 		Xex.add("TGA");
 		Xex.add("TAA");
-		//Methionine
+		// Methionine
 		Xex.add("ATG");
-		//Tryptophan
+		// Tryptophan
 		Xex.add("TGG");
-		
+
 		return Xex;
 	}
-	
+
 	/**
-	 * calcGCContent
-	 * Provides an interface to calculate the GC content of a FASTA file
-	 * to our group members' specifications
+	 * calcGCContent Provides an interface to calculate the GC content of a
+	 * FASTA file to our group members' specifications
 	 * 
 	 * Outputs a csv file of the gc content of the fasta file
-	 * @param fastaFilename FASTA input filename
-	 * @param start Start base pair
-	 * @param end End base pair
-	 * @param frameSize The size of the sampling window
-	 * @param frameShift How many bp to move the sampling window by
+	 * 
+	 * @param fastaFilename
+	 *            FASTA input filename
+	 * @param start
+	 *            Start base pair
+	 * @param end
+	 *            End base pair
+	 * @param frameSize
+	 *            The size of the sampling window
+	 * @param frameShift
+	 *            How many bp to move the sampling window by
 	 */
 	public static void calcGCContent(String fastaFilename, int start, int end,
 			int frameSize, int frameShift) {
@@ -256,7 +254,7 @@ public class DNALibrary {
 			popupError("An Error occurred!\n" + e.getMessage());
 		}
 	}
-	
+
 	/**
 	 * Calculates the GC Percent. Returns a double between 0.0 and 100.0
 	 */
@@ -269,13 +267,18 @@ public class DNALibrary {
 		}
 		return (double) total / dna.length() * 100;
 	}
-	/**Returns the gc percentage histogram of a DNA sequence as
-	 * an array of Strands
+
+	/**
+	 * Returns the gc percentage histogram of a DNA sequence as an array of
+	 * Strands
 	 * 
-	 * @param gene The DNA sequence to analyze
-	 * @param frame The sampling window size
-	 * @param shift Samping window shift distance
-	 * @return An array of strands, each with a length of the frame size. 
+	 * @param gene
+	 *            The DNA sequence to analyze
+	 * @param frame
+	 *            The sampling window size
+	 * @param shift
+	 *            Samping window shift distance
+	 * @return An array of strands, each with a length of the frame size.
 	 */
 	public static Strand[] gcPercentage(Strand gene, int frame, int shift) {
 		ArrayList<Strand> strands = new ArrayList<Strand>();
@@ -469,9 +472,9 @@ public class DNALibrary {
 		}
 	}
 
-	
-	/** chiSq
-	 * Calculates the chi square of a sequence of amino acids
+	/**
+	 * chiSq Calculates the chi square of a sequence of amino acids
+	 * 
 	 * @param aminoAcid
 	 * @param counts
 	 * @return The chi sq of the amino acid sequence
@@ -550,93 +553,223 @@ public class DNALibrary {
 	 * 
 	 * @throws IOException
 	 */
-	public static void concatChromosome(String folder) throws IOException
-	{
+	public static void concatChromosome(String folder) throws IOException {
 		int i;
 		File inFolder = new File(folder);
 		String[] files = inFolder.list();
 		ArrayList<FASTAFile> fastas = new ArrayList<FASTAFile>();
-		ArrayList<Strand[]> gffs = new ArrayList<Strand[]>();  
-		List<Strand> allStrands = new ArrayList<Strand>(); 
-		
-		FASTAFile master; 
-		
-		//Read all files and parse GFFS and FASTAS, begin constructing offset array
-		for (i = 0; i < files.length; i++) 
-		{
-			//Change these to backslashes for Windows
-			if(files[i].matches(".*\\.gff"))
-			{
-				System.out.println(files[i] + " read as GFF");
-				Strand current[] = readStrandsFromGFF(folder + "/" + files[i]);
-				gffs.add(current); 
-			}
-			else if(files[i].matches(".*\\.fna"))
-			{
-				System.out.println(files[i] + " read as FASTA");
-				FASTAFile current = readFastaStrand(new File(folder + "/" + files[i]));
-				fastas.add(current); 
-			}
-			else
-			{
-				System.err.println("Filetype not recognized:" + files[i]);
-				System.err.println("To process, rename as a .gff or .fna");
+		ArrayList<Strand[]> gffs = new ArrayList<Strand[]>();
+		List<Strand> allStrands = new ArrayList<Strand>();
 
-				popupError("Filetype not recognized:" + files[i]+ "\n\nTo process, rename as a .gff or .fna\n(continueing anyways)");
+		FASTAFile master;
 
-			}
-		}
-		Collections.sort(fastas); 
-		
-		int[] offsets = new int[fastas.size()];
-		master = fastas.get(0); 
-		offsets[0] = master.length;
-		for(i = 1; i < fastas.size(); i++)
-		{
-			//concatenate master and FASTAFile[i] 
-			master = concatenate(master, fastas.get(i));
-			offsets[i] = master.offset;
-		}
-		
-		for(Strand[] current : gffs)
-		{
-			Strand[] buffer = current; 
-			int offset = 0; 
-			
-			//Find the matching FASTA to get the offset
-			//Matching is based on name, i.e. "fosmid21" == "fosmid21"
-			for(i = 0; i < fastas.size(); i++)
+		// Read all files and parse GFFS and FASTAS, begin constructing offset
+		// array
+		for (i = 0; i < files.length; i++) {
+			// Change these to backslashes for Windows
+			if(!files[i].contains("master"))
 			{
-				//found a match
-				if(fastas.get(i).fosmid.equals(buffer[0].name))
-				{
-					System.out.println(buffer[0].name + " matched");
-					
-					//calculate gff gene offset
-					
-					if(i > 0)
-						offset = offsets[i - 1]; 
-					
-					System.out.println(i + " offset " + offset);
-					
-					for(Strand s : buffer)
-					{
-						s.start += offset;
-						s.end += offset; 
-					}
-					allStrands.addAll(Arrays.asList(buffer)); 
+				if (files[i].matches(".*\\.gff")) {
+					System.out.println(files[i] + " read as GFF");
+					Strand current[] = readStrandsFromGFF(folder + File.separator + files[i]);
+					gffs.add(current);
+				} else if (files[i].matches(".*\\.fna")) {
+					System.out.println(files[i] + " read as FASTA");
+					FASTAFile current = readFastaStrand(new File(folder + File.separator
+							+ files[i]));
+					fastas.add(current);
+				} else if(files[i].charAt(0) != '.'){
+					System.err.println("Filetype not recognized:" + files[i]);
+					System.err.println("To process, rename as a .gff or .fna");
+	
+					popupError("Filetype not recognized:"
+							+ files[i]
+							+ "\n\nTo process, rename as a .gff or .fna\n(continuing anyways)");
 				}
 			}
-			
 		}
-		Collections.sort(allStrands); 
+		Collections.sort(fastas);
+
+		int[] offsets = new int[fastas.size()];
+		master = fastas.get(0);
+		offsets[0] = master.length;
+		for (i = 1; i < fastas.size(); i++) {
+			// concatenate master and FASTAFile[i]
+			master = concatenate(master, fastas.get(i));
+			offsets[i] = master.offset;
+			// System.out.println("offset[" + i + "] = " + master.offset);
+		}
+
+		for (Strand[] current : gffs) {
+			Strand[] buffer = current;
+			int offset = 0;
+
+			// Find the matching FASTA to get the offset
+			// Matching is based on name, i.e. "fosmid21" == "fosmid21"
+			for (i = 0; i < fastas.size(); i++) {
+				// found a match
+				if (fastas.get(i).fosmid.equals(buffer[0].name)) {
+					System.out.println(buffer[0].name + " matched");
+
+					// calculate gff gene offset
+
+					if (i > 0)
+						offset = offsets[fastas.get(i).number - 1];
+
+					// System.out.println(fastas.get(i). + " offset " + offset);
+
+					for (Strand s : buffer) {
+						s.start += offset;
+						s.end += offset;
+					}
+					allStrands.addAll(Arrays.asList(buffer));
+				}
+			}
+
+		}
+		
+		HashSet<Strand> hs = new HashSet<Strand>();
+		hs.addAll(allStrands);
+		allStrands.clear();
+		allStrands.addAll(hs);
+		
+		Collections.sort(allStrands);
+		
+
+		String bigError = "";
+		
+		for(String s : errors)
+		{
+			bigError += s + "\n"; 
+		}
+		
+		popupMessage(bigError);
+		
 		outputGFF(allStrands, folder + "master.gff");
-		outputFastaFile(master, folder + "master.fna"); 
+		outputFastaFile(master, folder + "master.fna");
 	}
 
-	/** DEPRECATED
-	 * Concatenates all of the FASTA files in a folder into one big file
-	 * @param folder The folder name that the FASTA files are in
+	/**
+	 * Puts two overalpping strands together
+	 * 
+	 * <pre>
+	 * strands must be in order
+	 * @param s1
+	 * @param s2
+	 * @return
+	 */
+	public static Strand concatenate(Strand a, Strand b) {
+		String s1 = a.bases;
+		String s2 = b.bases;
+
+		String input = s2 + '$' + s1;
+
+		int[] indices = computePi(input);
+		int overlap = arrayMaxIndex(indices);
+
+		String whole = s1
+				+ s2.substring(indices[overlap]
+						+ (indices.length - 1 - overlap));
+
+		Strand both = new Strand();
+
+		both.bases = whole;
+
+		both.end = b.end;
+		both.start = indices[overlap] + (indices.length - 1 - overlap);
+		both.id = a.id;
+		both.length = whole.length();
+		both.direction = a.direction;
+		both.name = a.name;
+		both.transcriptId = a.transcriptId;
+		both.type = a.type;
+
+		return both;
+	}
+
+	/**
+	 * Puts two overalpping strands together
+	 * 
+	 * <pre>
+	 * strands must be in order
+	 * @param s1 The first FASTA strand
+	 * @param s2 The second FASTA strand
+	 * @return A new FASTA
+	 */
+	public static FASTAFile concatenate(FASTAFile a, FASTAFile b) {
+		String s1 = a.data;
+		String s2 = b.data;
+
+		if(errors == null)
+			errors = new ArrayList<String>(); 
+		
+		String whole = s1 + 'x' + s2;
+
+		String input = s2 + '$' + s1;
+
+		int[] indices = computePi(input);
+		int maxIndex = arrayMaxIndex(indices);
+		// System.out.println(Arrays.toString(computePi(input)));
+
+		int overlap = input.length() - maxIndex + indices[maxIndex];
+
+		// System.out.println(whole);
+		// System.out.println(indices[maxIndex] + (indices.length - 1 -
+		// maxIndex));
+		// System.out.println(indices[maxIndex]);
+
+		int incorrect = 0;
+
+		// System.out.println(overlap);
+
+		// System.out.println(Arrays.toString(computePi(input)));
+
+		int offset = indices[maxIndex] + (indices.length - 1 - maxIndex);
+
+		try {
+			whole = s1
+					+ s2.substring(indices[maxIndex]
+							+ (indices.length - 1 - maxIndex));
+
+			for (int i = 0; i < overlap; i++) {
+				// System.out.println(s2.charAt(i) + " " + s1.charAt(s1.length()
+				// - overlap + i));
+
+				if (s2.charAt(i) != s1.charAt(s1.length() - overlap + i))
+					incorrect++;
+			}
+			System.out.println("Base pair errors in " + a.fosmid + "/" + b.fosmid + ": " +  incorrect);
+			errors.add("Base pair errors in " + a.fosmid + "/" + b.fosmid + ": " +  incorrect); 
+
+		} catch (StringIndexOutOfBoundsException ex) {
+			offset = 1;
+			System.err.println("Strings " + a.fosmid + " and " + b.fosmid
+					+ " couldn't be matched - just adding it to the end");
+		}
+
+		System.out.println("Offset of " + b.fosmid + " is " + offset);
+
+		FASTAFile both = new FASTAFile();
+
+		both.data = whole;
+
+		both.offset = a.length - offset;
+		both.length = whole.length();
+		both.name = a.name;
+		both.fosmid = b.fosmid;
+		both.number = b.number;
+
+		// System.out.println("Returned offset is " + both.offset);
+
+		return both;
+	}
+
+	/**
+	 * DEPRECATED Concatenates all of the FASTA files in a folder into one big
+	 * file
+	 * 
+	 * @param folder
+	 *            The folder name that the FASTA files are in
 	 * @return A FASTAFile of the entire folder's chromosome
 	 * @throws FileNotFoundException
 	 */
@@ -668,10 +801,12 @@ public class DNALibrary {
 		return master;
 	}
 
-	/** DEPRECATED
-	 * Reads all of the GFFs in a folder
-	 * @param folder The folder name containing GFFs
-	 * @return A list 
+	/**
+	 * DEPRECATED Reads all of the GFFs in a folder
+	 * 
+	 * @param folder
+	 *            The folder name containing GFFs
+	 * @return A list
 	 * @throws FileNotFoundException
 	 */
 	public static List<Strand> concatGFF(String folder)
@@ -702,92 +837,6 @@ public class DNALibrary {
 		Collections.sort(parts);
 		return parts;
 	}
-	
-	/**
-	 * Puts two overalpping strands together
-	 * 
-	 * <pre>
-	 * strands must be in order
-	 * @param s1
-	 * @param s2
-	 * @return
-	 */
-	public static Strand concatenate(Strand a, Strand b) {
-		String s1 = a.bases;
-		String s2 = b.bases;
-
-		String input = s2 + '$' + s1;
-
-		int[] indices = computePi(input);
-		int overlap = arrayMaxIndex(indices);
-
-		String whole = s1
-				+ s2.substring(indices[overlap]
-						+ (indices.length - 1 - overlap));
-
-		Strand both = new Strand();
-
-		both.bases = whole;
-
-		both.end = b.end;
-		both.start = indices[overlap] + (indices.length - 1 - overlap);
-		System.out.println("offset: " + both.start);
-		both.id = a.id;
-		both.length = whole.length();
-		both.direction = a.direction;
-		both.name = a.name;
-		both.transcriptId = a.transcriptId;
-		both.type = a.type;
-
-		return both;
-	}
-
-	/**
-	 * Puts two overalpping strands together
-	 * 
-	 * <pre>
-	 * strands must be in order
-	 * @param s1 The first FASTA strand
-	 * @param s2 The second FASTA strand
-	 * @return A new FASTA
-	 */
-	public static FASTAFile concatenate(FASTAFile a, FASTAFile b) {
-		String s1 = a.data;
-		String s2 = b.data;
-
-		String input = s2 + '$' + s1;
-
-		int[] indices = computePi(input);
-
-		// System.out.println(Arrays.toString(computePi(input)));
-
-		int overlap = arrayMaxIndex(indices);
-		String whole = s1 + s2;
-
-		int offset = indices[overlap] + (indices.length - 1 - overlap);
-
-		try {
-			whole = s1 + s2.substring(offset);
-		} catch (StringIndexOutOfBoundsException ex) {
-			offset = 0;
-			System.err.println("Strings " + a.fosmid + " and " + b.fosmid
-					+ " couldn't be matched - just adding it to the end");
-		}
-
-		FASTAFile both = new FASTAFile();
-
-		both.data = whole;
-
-		both.offset = a.length - offset;
-		both.length = whole.length();
-		both.name = a.name;
-		both.fosmid = b.fosmid;
-		both.number = b.number;
-
-		return both;
-	}
-	
-	
 
 	/**
 	 * Returns the index of the largest int in an int array
@@ -806,7 +855,7 @@ public class DNALibrary {
 
 		return max;
 	}
-	
+
 	/**
 	 * Returns the index of the largest int in an int array
 	 * 
@@ -831,8 +880,8 @@ public class DNALibrary {
 
 		int[] pi = new int[pattern.length + 1];
 		int nextChr, pfxLen;
-		pfxLen = 0; 
-		
+		pfxLen = 0;
+
 		for (nextChr = 1; nextChr < pattern.length; nextChr++) {
 			while (pattern[pfxLen] != pattern[nextChr] && pfxLen > 0)
 				pfxLen = pi[pfxLen];
@@ -973,7 +1022,6 @@ public class DNALibrary {
 
 		return out;
 	}
-	
 
 	/**
 	 * Takes a list of GFFs and outputs one big GFF file
@@ -995,6 +1043,8 @@ public class DNALibrary {
 		}
 		out.close();
 		System.out.println("GFF file " + outputname + " written");
+		popupMessage("GFF file " + outputname + " written");
+		
 	}
 
 	// Outputs a fasta file with the name of the input
@@ -1011,13 +1061,19 @@ public class DNALibrary {
 						Math.min((i + 50), input.data.length())));
 			}
 			System.out.println("FASTA file " + name + " written");
+			popupMessage("FASTA file " + name + " written");
 			fna.close();
+		
+			
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			System.err.println("FASTA file " + name + " NOT written");
+			popupError("FASTA file " + name + " NOT written"); 
 		}
+
+		
 	}
-	
+
 	public static void printGCtoCSV(int frame, int shift, String gffFile,
 			String csvFile) throws IOException {
 
@@ -1052,7 +1108,7 @@ public class DNALibrary {
 		// filename.lastIndexOf('.')) + ".csv" + " written.");
 		// System.out.println("Done. Goodbye.");
 	}
-	
+
 	/*
 	 * Pops up an error Message
 	 */
@@ -1069,7 +1125,6 @@ public class DNALibrary {
 				JOptionPane.PLAIN_MESSAGE);
 	}
 
-
 	// Representation of a FASTA file, basically a long string of bases
 	public static class FASTAFile implements Comparable<FASTAFile> {
 		String name;
@@ -1084,13 +1139,14 @@ public class DNALibrary {
 		}
 
 	}
-	
+
 	/**
 	 * Class representation of a strand of DNA
+	 * 
 	 * @author johntbiddle
-	 *
+	 * 
 	 */
-	
+
 	public static class Strand implements Comparable<Strand> {
 		String bases;
 		// Name of the file this strand came from
@@ -1197,3 +1253,4 @@ public class DNALibrary {
 	}
 
 }
+m
