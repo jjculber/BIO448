@@ -41,10 +41,25 @@ public class commandLine extends DNALibrary{
 		algorithm.setScoringScheme(score);
 		
 		PairwiseAlignment alignment = algorithm.getPairwiseAlignment();
-		System.out.println(alignment.getGappedSequence1());
-		System.out.println(alignment.getGappedSequence2());
+		
+		printGappedSequence(alignment.getGappedSequence1(), alignment.getGappedSequence2());
 		
 		return alignment.getScore();		
+	}
+	
+	public static void printGappedSequence(String a, String b)
+	{
+		System.out.println(a);
+		for(int i = 0; i < Math.min(a.length(), b.length()); i++)
+		{
+			if(a.charAt(i) == b.charAt(i))
+			{
+				System.out.print("|");
+			}
+			else System.out.print(" ");
+		}
+		System.out.println("");
+		System.out.println(b);
 	}
 	
 	/**
