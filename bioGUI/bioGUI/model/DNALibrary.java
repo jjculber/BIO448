@@ -38,20 +38,9 @@ public class DNALibrary {
 	public static File inputFile;
 	//yes, this is a global variable.
 	public static ArrayList<String> errors;
+	public static String blosum62String =    "ARNDCQEGHILKMFPSTWYVBZX*";
+
 	
-	public static void main(String[] args) throws IOException {
-		System.out.println("MASTER CONCATENATOR");
-
-		System.out.println("WHAT FOLDER WOULD YOU LIKE, BROTHER?");
-
-		Scanner sc = new Scanner(System.in);
-
-		String file = sc.next();
-
-		concatChromosome(file);
-
-		
-	}
 
 	/**
 	 * Given a nucleotide as a char, returns its complement
@@ -253,6 +242,62 @@ public class DNALibrary {
 			e.printStackTrace();
 			popupError("An Error occurred!\n" + e.getMessage());
 		}
+	}
+	
+	public static int[][] constructBlosum62()
+	{
+		int[][] matrix = 
+				{{ 4,-1,-2,-2, 0,-1,-1, 0,-2,-1,-1,-1,-1,-2,-1, 1, 0,-3,-2, 0,-2,-1, 0,-4,},
+				{-1, 5, 0,-2,-3, 1, 0,-2, 0,-3,-2, 2,-1,-3,-2,-1,-1,-3,-2,-3,-1, 0,-1,-4,},
+				{-2, 0, 6, 1,-3, 0, 0, 0, 1,-3,-3, 0,-2,-3,-2, 1, 0,-4,-2,-3, 3, 0,-1,-4,},
+				{-2,-2, 1, 6,-3, 0, 2,-1,-1,-3,-4,-1,-3,-3,-1, 0,-1,-4,-3,-3, 4, 1,-1,-4,},
+				{ 0,-3,-3,-3, 9,-3,-4,-3,-3,-1,-1,-3,-1,-2,-3,-1,-1,-2,-2,-1,-3,-3,-2,-4,},
+				{-1, 1, 0, 0,-3, 5, 2,-2, 0,-3,-2, 1, 0,-3,-1, 0,-1,-2,-1,-2, 0, 3,-1,-4,},
+				{-1, 0, 0, 2,-4, 2, 5,-2, 0,-3,-3, 1,-2,-3,-1, 0,-1,-3,-2,-2, 1, 4,-1,-4,},
+				{ 0,-2, 0,-1,-3,-2,-2, 6,-2,-4,-4,-2,-3,-3,-2, 0,-2,-2,-3,-3,-1,-2,-1,-4,},
+				{-2, 0, 1,-1,-3, 0, 0,-2, 8,-3,-3,-1,-2,-1,-2,-1,-2,-2, 2,-3, 0, 0,-1,-4,},
+				{-1,-3,-3,-3,-1,-3,-3,-4,-3, 4, 2,-3, 1, 0,-3,-2,-1,-3,-1, 3,-3,-3,-1,-4,},
+				{-1,-2,-3,-4,-1,-2,-3,-4,-3, 2, 4,-2, 2, 0,-3,-2,-1,-2,-1, 1,-4,-3,-1,-4,},
+				{-1, 2, 0,-1,-3, 1, 1,-2,-1,-3,-2, 5,-1,-3,-1, 0,-1,-3,-2,-2, 0, 1,-1,-4,},
+				{-1,-1,-2,-3,-1, 0,-2,-3,-2, 1, 2,-1, 5, 0,-2,-1,-1,-1,-1, 1,-3,-1,-1,-4,},
+				{-2,-3,-3,-3,-2,-3,-3,-3,-1, 0, 0,-3, 0, 6,-4,-2,-2, 1, 3,-1,-3,-3,-1,-4,},
+				{-1,-2,-2,-1,-3,-1,-1,-2,-2,-3,-3,-1,-2,-4, 7,-1,-1,-4,-3,-2,-2,-1,-2,-4,},
+				{ 1,-1, 1, 0,-1, 0, 0, 0,-1,-2,-2, 0,-1,-2,-1, 4, 1,-3,-2,-2, 0, 0, 0,-4,},
+				{ 0,-1, 0,-1,-1,-1,-1,-2,-2,-1,-1,-1,-1,-2,-1, 1, 5,-2,-2, 0,-1,-1, 0,-4,},
+				{-3,-3,-4,-4,-2,-2,-3,-2,-2,-3,-2,-3,-1, 1,-4,-3,-2, 11, 2,-3,-4,-3,-2,-4,},
+				{-2,-2,-2,-3,-2,-1,-2,-3, 2,-1,-1,-2,-1, 3,-3,-2,-2, 2, 7,-1,-3,-2,-1,-4,},
+				{ 0,-3,-3,-3,-1,-2,-2,-3,-3, 3, 1,-2, 1,-1,-2,-2, 0,-3,-1, 4,-3,-2,-1,-4,},
+				{-2,-1, 3, 4,-3, 0, 1,-1, 0,-3,-4, 0,-3,-3,-2, 0,-1,-4,-3,-3, 4, 1,-1,-4,},
+				{-1, 0, 0, 1,-3, 3, 4,-2, 0,-3,-3, 1,-1,-3,-1, 0,-1,-3,-2,-2, 1, 4,-1,-4,},
+				{ 0,-1,-1,-1,-2,-1,-1,-1,-1,-1,-1,-1,-1,-1,-2, 0, 0,-2,-1,-1,-1,-1,-1,-4,},
+				{-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4,-4, 1,}};
+
+		return matrix;
+	}
+	
+	/**
+	 * Returns blosum62 cost of the given character pair
+	 * @param col column character
+	 * @param row row character
+	 * @return score
+	 */
+	public static int getCost(char col, char row)
+	{
+		int[][] matrix = constructBlosum62(); 
+		
+		return matrix[blosum62String.indexOf(col)][blosum62String.indexOf(row)]; 
+	}
+	
+	/**
+	 * Returns the largest number of the three given
+	 */
+	public static int max(int a, int b, int c)
+	{
+		int temp;
+		
+		temp = Math.max(a, b);
+		
+		return Math.max(temp, c);
 	}
 
 	/**
@@ -1127,12 +1172,12 @@ public class DNALibrary {
 
 	// Representation of a FASTA file, basically a long string of bases
 	public static class FASTAFile implements Comparable<FASTAFile> {
-		String name;
-		int number;
-		String fosmid;
-		int length;
-		String data;
-		int offset;
+		public String name;
+		public int number;
+		public String fosmid;
+		public int length;
+		public String data;
+		public int offset;
 
 		public int compareTo(FASTAFile arg0) {
 			return this.number - arg0.number;
@@ -1253,4 +1298,3 @@ public class DNALibrary {
 	}
 
 }
-m

@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Scanner;
 
+import bioGUI.model.DNALibrary;
+
 import neobio.alignment.*;
 
 public class commandLine extends DNALibrary{
@@ -19,16 +21,14 @@ public class commandLine extends DNALibrary{
 		
 		score.deletionCost = sc.nextInt();
 		
-		System.out.println("reference FASTA file?");
-		FASTAFile ref = readFastaStrand(new File(sc.next()));
-		
 		System.out.println("FASTA candidate 1?");
-		FASTAFile a = readFastaStrand(new File(sc.next()));
+		String a = sc.next();
 		
 		System.out.println("FASTA candidate 2?");
-		FASTAFile b = readFastaStrand(new File(sc.next()));
+		String b = sc.next(); 
 		
-		getBestAlignment(ref, a, b); 
+		System.out.println(getScore(a, b));
+		//getBestAlignment(ref, a, b); 
 		
 	}
 	
@@ -41,7 +41,9 @@ public class commandLine extends DNALibrary{
 		algorithm.setScoringScheme(score);
 		
 		PairwiseAlignment alignment = algorithm.getPairwiseAlignment();
+		System.out.println(alignment.getGappedSequence1());
 		System.out.println(alignment.getGappedSequence2());
+		
 		return alignment.getScore();		
 	}
 	

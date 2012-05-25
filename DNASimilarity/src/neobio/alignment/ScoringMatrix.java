@@ -285,6 +285,7 @@ public class ScoringMatrix extends ScoringScheme
 			if (col_codes.indexOf(c = row_codes.charAt(i)) == -1)
 				throw new InvalidScoringMatrixException
 					("There is no corresponding column for row character '" + c + "'.");
+	
 
 		// store the maximum absolute value found
 		this.max_absolute_score = max_abs;
